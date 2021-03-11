@@ -4,10 +4,10 @@ val WRITE = 2
 val READ = 4
 
 fun main() {
-    println(EXECUTE)
-    println(EXECUTE or WRITE)
-    println(EXECUTE or READ)
-    println(EXECUTE or READ or WRITE)
+    println(checkPermissions(EXECUTE))
+    println(checkPermissions(EXECUTE or WRITE))
+    println(checkPermissions(EXECUTE or READ))
+    println(checkPermissions(EXECUTE or READ or WRITE))
 }
 
 fun checkPermissions(perms: Int): Boolean = perms and (READ or EXECUTE) == (READ or EXECUTE)

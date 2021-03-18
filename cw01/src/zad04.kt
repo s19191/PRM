@@ -4,35 +4,35 @@ fun main() {
     |Grudzień""".trimMargin()
     println(months)
 
-    val monthList = months.split(""",\s+""".toRegex())
-    println(monthList)
+    val monthsList = months.split(""",\s+""".toRegex())
+    println(monthsList)
 
-    for (i in 0..monthList.size -1) {
-        print("${monthList[i]}")
+    for (i in 0..monthsList.size -1) {
+        print("${monthsList[i]}")
     }
     println()
 
-    for (i in 0 until monthList.size) {
-        print("${monthList[i]}")
+    for (i in 0 until monthsList.size) {
+        print("${monthsList[i]}")
     }
     println()
 
-    for (i in monthList.indices) {
-        print("${monthList[i]}")
+    for (i in monthsList.indices) {
+        print("${monthsList[i]}")
     }
     println()
 
-    for (m in monthList) {
+    for (m in monthsList) {
         if (m.startsWith("L")) print("$m")
     }
     println()
 
-    monthList.forEachIndexed {index, m ->
+    monthsList.forEachIndexed { index, m ->
         if (index % 2 == 0) print("$m")
     }
     println()
 
-    val iter = monthList.iterator()
+    val iter = monthsList.iterator()
     while (iter.hasNext()) {
         print("${iter.next()}")
     }
@@ -46,12 +46,12 @@ fun main() {
         }
         rec(0)
     }
-    rec(monthList)
+    rec(monthsList)
     println()
 
-    println(monthList.joinToString(".",";",";",3))
+    println(monthsList.joinToString(".",";",";",3))
 
-    monthList.filter { !it.startsWith("P") }
+    monthsList.filter { !it.startsWith("P") }
         .map { it.replace('e','_') }
         .sortedBy { it[0] }
         .forEach { print("$it") }

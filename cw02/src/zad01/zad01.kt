@@ -1,5 +1,4 @@
-import zad01.Person
-import zad01.Sex
+package zad01
 
 fun main() {
     val people = mutableListOf(

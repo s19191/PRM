@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prevention">Zapobieganie:</string>
+    <string-array name="prevention_steps">
+        <item>Często myj ręce. Używaj wody z mydłem i środka dezynfekującego na bazie alkoholu.</item>
+        <item>Zachowaj bezpieczną odległość od osób kaszlących i kichających.</item>
+        <item>Noś maskę, gdy zachowanie odległości nie jest możliwe.</item>
+        <item>Nie dotykaj oczu, nosa ani ust.</item>
+        <item>Gdy kaszlesz lub kichasz, zakrywaj nos i usta wewnętrzną stroną łokcia lub chusteczką.</item>
+        <item>Jeśli źle się czujesz, zostań w domu.</item>
+        <item>Jeśli masz gorączkę, kaszel i trudności z oddychaniem, skontaktuj się z lekarzem.</item>
+    </string-array>
+</resources>

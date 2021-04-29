@@ -1,5 +1,6 @@
 package pl.edu.pja.pysznepja
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import pl.edu.pja.pysznepja.databinding.ActivityMainBinding
@@ -13,6 +14,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.button.setOnClickListener {
             println("code")
+
+            startActivity(Intent(this, AddActivity::class.java))
         }
     }
 }

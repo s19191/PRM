@@ -1,0 +1,2 @@
+pl/edu/pja/covid_19/BuildConfig.java
+ pl.edu.pja.covid_19.BuildConfig

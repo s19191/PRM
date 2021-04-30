@@ -1,4 +1,4 @@
-package pl.edu.pja.pysznepja
+package pl.edu.pja.pysznepja.adapter
 
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater

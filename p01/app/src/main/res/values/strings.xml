@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">p01</string>
+    <string name="add_button">Dodaj</string>
+    <string name="place">Miejsce:</string>
+    <string name="amount">Kwota:</string>
+    <string name="date">Data:</string>
+    <string name="category">Kategoria:</string>
+    <string-array name="categories_array">
+        <item>Jedzenie</item>
+        <item>Mieszkanie</item>
+        <item>Opłaty i rachunki</item>
+        <item>Zdrowie, higiena i chemia</item>
+        <item>Ubranie</item>
+        <item>Relaks</item>
+        <item>Rozrywka</item>
+        <item>Transport</item>
+        <item>Inne wydatki</item>
+    </string-array>
 </resources>

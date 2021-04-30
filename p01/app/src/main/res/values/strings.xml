@@ -5,6 +5,7 @@
     <string name="amount">Kwota:</string>
     <string name="date">Data:</string>
     <string name="category">Kategoria:</string>
+    <string name="save">Zapisz</string>
     <string-array name="categories_array">
         <item>Jedzenie</item>
         <item>Mieszkanie</item>

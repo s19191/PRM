@@ -1,7 +1,9 @@
 package pl.edu.pja.p01
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -17,15 +19,12 @@ class AddActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         val spinner = binding.categoriesSpinner
-// Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter.createFromResource(
                 this,
                 R.array.categories_array,
                 android.R.layout.simple_spinner_item
         ).also { adapter ->
-            // Specify the layout to use when the list of choices appears
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            // Apply the adapter to the spinner
             spinner.adapter = adapter
         }
 
@@ -38,8 +37,7 @@ class AddActivity : AppCompatActivity() {
     fun onSave(view: View) {
         val place = binding.place.text.toString()
         val amount = binding.amount.text.toString()?.toDouble()
-//        val category = binding.categoriesSpinner.toString()
-        val category = "ala"
+        val category = binding.categoriesSpinner.selectedItem.toString()
         val date =binding.date.date
         if (place.isEmpty()) {
             Toast.makeText(this, "Nie wpisałeś miejsca", Toast.LENGTH_LONG).show()

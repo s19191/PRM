@@ -16,8 +16,8 @@ import pl.edu.pja.pysznepja.databinding.ActivityMainBinding
 const val REQ = 1;
 
 class MainActivity : AppCompatActivity() {
-    val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
-    val dishAdapter by lazy { DishAdapter() }
+    private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+    private val dishAdapter by lazy { DishAdapter() }
 
 //    val callback = ActivityResultCallback<Any> {
 //

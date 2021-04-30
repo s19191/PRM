@@ -1,0 +1,16 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application>
+        <activity android:name="pl.edu.pja.covid_19.AdditionalActivity"
+            android:parentActivityName="pl.edu.pja.covid_19.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"
+                    android:host="pja.edu.pl"
+                    android:path="/handwash"/>
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

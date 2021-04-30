@@ -8,8 +8,8 @@ import pl.edu.pja.p01.model.Expense
 import java.text.DateFormat
 import java.util.*
 
-class ExpenseItem(val binding: ItemExpenseBinding): RecyclerView.ViewHolder(binding.root) {
-    val calendar = Calendar.getInstance()
+class ExpenseItem(private val binding: ItemExpenseBinding): RecyclerView.ViewHolder(binding.root) {
+    private val calendar = Calendar.getInstance()
 
     fun bind(expense: Expense) {
         binding.apply {

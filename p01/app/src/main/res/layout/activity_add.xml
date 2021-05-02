@@ -51,7 +51,7 @@
         android:layout_marginEnd="8dp"
         android:ems="10"
         android:inputType="textShortMessage"
-        android:text="PrzykładoweDane"
+        android:text="@string/example_data_place"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/place_label"
         app:layout_constraintTop_toTopOf="parent" />
@@ -103,5 +103,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="8dp"
+        android:onClick="onSave"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/date"
+        app:srcCompat="@drawable/ic_save" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,8 +7,9 @@
     <string name="category">Kategoria:</string>
     <string name="save">Zapisz</string>
     <string name="example_data_place">PrzykładoweDane</string>
-    <string name="balance_label">Saldo:</string>
+    <string name="balance_label">Saldo obecnego miesiąca:</string>
     <string name="start_balance">0</string>
+    <string name="chart_button">Zestawienie miesięczne</string>
     <string-array name="categories_array">
         <item>Jedzenie</item>
         <item>Mieszkanie</item>

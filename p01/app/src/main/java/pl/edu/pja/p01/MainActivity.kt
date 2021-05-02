@@ -24,6 +24,10 @@ class MainActivity : AppCompatActivity() {
 //            startActivity(Intent(this, AddActivity::class.java))
             startActivityForResult(Intent(this, AddActivity::class.java), REQ)
         }
+        binding.chartButton.setOnClickListener {
+//            startActivity(Intent(this, AddActivity::class.java))
+            startActivityForResult(Intent(this, ChartActivity::class.java), REQ)
+        }
 
 
         setupExpenseList()
@@ -48,12 +52,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun updateBalance() {
-        var sum = 0.0;
+        var sum = 0.0
         for (i in Shared.expenseList) {
             calendar.timeInMillis = i.date
-            val currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1
-            val expenseDateMonth = calendar.get(Calendar.MONTH) + 1
-            if (currentMonth == expenseDateMonth) {
+            val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
+            val expenseDateMonth = calendar.get(Calendar.MONTH)
+            val currentYear = Calendar.getInstance().get(Calendar.MONTH)
+            val expenseDateYear = calendar.get(Calendar.MONTH)
+            if (currentMonth == expenseDateMonth && currentYear == expenseDateYear) {
                 sum += i.amount
             }
         }

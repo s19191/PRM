@@ -44,10 +44,10 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
             val copy = calculateBalancePerDay()
             copy.sort()
             val minimumBalance = copy[0]
-//            println("Min$minimumBalance")
+            println("Min$minimumBalance")
             copy.sortDescending()
             val maximumBalance = copy[0]
-//            println("Max$maximumBalance")
+            println("Max$maximumBalance")
             val minimumBalanceAbs = abs(minimumBalance)
             val sumBalanceAbs = maximumBalance + minimumBalanceAbs
             drawLine(50f, 0f, 50f, height.toFloat(), paint)
@@ -340,8 +340,8 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
                                     ((height * (maximumBalance - abs(balancePerDay[i]))) / sumBalanceAbs).toFloat(),
                                     paintPositive
                             )
-                            xTmp += (width.toFloat() - 50f) / daysInMonth
                         }
+                        xTmp += (width.toFloat() - 50f) / daysInMonth
                     }
                 }
             }
@@ -410,10 +410,10 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
             sum += balanceOfDay[i]
             balancePerDay.add(sum)
         }
-//        println(balanceOfDay)
-//        println(balanceOfDay.size)
-//        println(balancePerDay)
-//        println(balancePerDay.size)
+        println(balanceOfDay)
+        println(balanceOfDay.size)
+        println(balancePerDay)
+        println(balancePerDay.size)
         return balancePerDay
     }
 }

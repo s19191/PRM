@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import pl.edu.pja.p01.AddActivity
-import pl.edu.pja.p01.Shared
+import pl.edu.pja.p01.shared.Shared
 import pl.edu.pja.p01.databinding.ItemExpenseBinding
 import pl.edu.pja.p01.model.Expense
 

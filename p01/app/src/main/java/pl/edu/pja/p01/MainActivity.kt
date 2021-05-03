@@ -1,12 +1,12 @@
 package pl.edu.pja.p01
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import pl.edu.pja.p01.adapter.ExpenseAdapter
 import pl.edu.pja.p01.databinding.ActivityMainBinding
+import pl.edu.pja.p01.shared.Shared
 import java.util.*
 
 const val REQ = 1

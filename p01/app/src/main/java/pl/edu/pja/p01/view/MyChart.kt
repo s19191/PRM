@@ -1,4 +1,4 @@
-package pl.edu.pja.p01
+package pl.edu.pja.p01.view
 
 import android.content.Context
 import android.graphics.Canvas
@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.RequiresApi
+import pl.edu.pja.p01.shared.Shared
 import java.util.*
 import kotlin.collections.HashMap
 import kotlin.math.abs
@@ -44,10 +45,10 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
             val copy = calculateBalancePerDay()
             copy.sort()
             val minimumBalance = copy[0]
-            println("Min$minimumBalance")
+//            println("Min$minimumBalance")
             copy.sortDescending()
             val maximumBalance = copy[0]
-            println("Max$maximumBalance")
+//            println("Max$maximumBalance")
             val minimumBalanceAbs = abs(minimumBalance)
             val sumBalanceAbs = maximumBalance + minimumBalanceAbs
             drawLine(50f, 0f, 50f, height.toFloat(), paint)
@@ -351,11 +352,12 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
     private fun calculateStartBalance() : Double {
         var sum = 0.0
         for (i in Shared.expenseList) {
-            calendar.timeInMillis = i.date
+            val calendarTmp = Calendar.getInstance()
+            calendarTmp.timeInMillis = i.date
             val fromWhen = Calendar.getInstance()
-            fromWhen.set(Calendar.DAY_OF_MONTH, 1)
-            fromWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 1)
-            if (calendar.before(fromWhen)) {
+            fromWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 2)
+            fromWhen.set(Calendar.DAY_OF_MONTH, fromWhen.getActualMaximum(Calendar.DAY_OF_MONTH))
+            if (calendarTmp.before(fromWhen)) {
                 sum += i.amount
             }
         }
@@ -367,7 +369,6 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
         fromWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 2)
         fromWhen.set(Calendar.DAY_OF_MONTH, fromWhen.getActualMaximum(Calendar.DAY_OF_MONTH))
         val toWhen = Calendar.getInstance()
-        toWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH))
         toWhen.set(Calendar.DAY_OF_MONTH, 1)
         val groupedExpenses = Shared.expenseList.filter { element ->
             calendar.timeInMillis = element.date
@@ -410,10 +411,8 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
             sum += balanceOfDay[i]
             balancePerDay.add(sum)
         }
-        println(balanceOfDay)
-        println(balanceOfDay.size)
-        println(balancePerDay)
-        println(balancePerDay.size)
+//        println(balanceOfDay)
+//        println(balancePerDay)
         return balancePerDay
     }
 }

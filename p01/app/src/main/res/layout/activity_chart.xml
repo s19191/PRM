@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ChartActivity">
 
-    <pl.edu.pja.p01.MyChart
+    <pl.edu.pja.p01.view.MyChart
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="8dp"

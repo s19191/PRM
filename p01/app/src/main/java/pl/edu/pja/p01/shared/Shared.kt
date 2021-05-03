@@ -1,4 +1,4 @@
-package pl.edu.pja.p01
+package pl.edu.pja.p01.shared
 
 import pl.edu.pja.p01.model.Expense
 import java.util.*

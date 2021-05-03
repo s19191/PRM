@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import pl.edu.pja.p01.databinding.ActivityAddBinding
 import pl.edu.pja.p01.model.Expense
+import pl.edu.pja.p01.shared.Shared
 import java.util.*
 
 class AddActivity : AppCompatActivity() {

@@ -1,6 +1,5 @@
 package pl.edu.pja.p01
 
-import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -18,7 +17,7 @@ class AddActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        setResult(Activity.RESULT_CANCELED)
+        setResult(RESULT_CANCELED)
 
         val bundle :Bundle ?=intent.extras
         if (bundle!=null){
@@ -46,7 +45,6 @@ class AddActivity : AppCompatActivity() {
             binding.amount.setText(editExpenseItem.amount.toString())
             binding.date.date = editExpenseItem.date
             binding.categoriesSpinner.setSelection(editExpenseItem.category.toInt())
-            binding.saveButton.text = "Zedytuj"
         }
     }
 
@@ -78,7 +76,7 @@ class AddActivity : AppCompatActivity() {
             Shared.expenseList.removeAt(editItemPosition)
             Shared.expenseList.add(editItemPosition, expense)
         }
-        setResult(Activity.RESULT_OK, intent)
+        setResult(RESULT_OK, intent)
         finish()
     }
 }

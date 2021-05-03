@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.RequiresApi
 import java.util.*
+import kotlin.collections.HashMap
 import kotlin.math.abs
 
 class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
@@ -20,6 +21,16 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
         textSize = 20f
     }
 
+    private val paintPositive = Paint().apply {
+        color = Color.GREEN
+        strokeWidth = 10f
+    }
+
+    private val paintNegative = Paint().apply {
+        color = Color.RED
+        strokeWidth = 10f
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
@@ -27,11 +38,14 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
         with(canvas) {
             val daysInMonth = Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH)
             var xTmp = ((width.toFloat() - 50f) / daysInMonth) + 50f
-            val startBalance = calculateStartBalance()
-            val maximumBalance = calculateMaximumBalance()
-            println("Max$maximumBalance")
-            val minimumBalance = calculateMinimumBalance()
+            val balancePerDay = calculateBalancePerDay()
+            val copy = balancePerDay
+            copy.sort()
+            val minimumBalance = copy[0]
             println("Min$minimumBalance")
+            copy.sortDescending()
+            val maximumBalance = copy[0]
+            println("Max$maximumBalance")
             val minimumBalanceAbs = abs(minimumBalance)
             drawLine(50f, 0f, 50f, height.toFloat(), paint)
             when {
@@ -49,6 +63,11 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
                             for (i in 0..rounded step 10000) {
                                 drawText("-$i", 0f, yTmp, paint)
                                 yTmp += (height.toFloat() - 20f) / howManyParts
+                            }
+                            for (i in 1..daysInMonth) {
+                                drawLine(50f, 0f, 50f, height.toFloat(), paint)
+                                drawText(i.toString().plus("\t"), xTmp, 30f, paint)
+                                xTmp += (width.toFloat() - 50f) / daysInMonth
                             }
                         }
                         minimumBalanceAbs in 10000.0..100000.0 -> {
@@ -382,45 +401,100 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
         return sum
     }
 
-    private fun calculateMaximumBalance() : Double {
-        var sum = calculateStartBalance()
-        var maximumBalance = sum
-        for (i in Shared.expenseList) {
-            calendar.timeInMillis = i.date
-            val fromWhen = Calendar.getInstance()
-            fromWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 2)
-            fromWhen.set(Calendar.DAY_OF_MONTH, fromWhen.getActualMaximum(Calendar.DAY_OF_MONTH))
-            val toWhen = Calendar.getInstance()
-            toWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH))
-            toWhen.set(Calendar.DAY_OF_MONTH, 1)
-            if (calendar.after(fromWhen) && calendar.before(toWhen)) {
-                sum += i.amount
-            }
-            if (sum >= maximumBalance) {
-                maximumBalance = sum
-            }
-        }
-        return maximumBalance
-    }
+//    private fun calculateMaximumBalance() : Double {
+//        var sum = calculateStartBalance()
+//        var maximumBalance = sum
+//        for (i in Shared.expenseList) {
+//            calendar.timeInMillis = i.date
+//            val fromWhen = Calendar.getInstance()
+//            fromWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 2)
+//            fromWhen.set(Calendar.DAY_OF_MONTH, fromWhen.getActualMaximum(Calendar.DAY_OF_MONTH))
+//            val toWhen = Calendar.getInstance()
+//            toWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH))
+//            toWhen.set(Calendar.DAY_OF_MONTH, 1)
+//            if (calendar.after(fromWhen) && calendar.before(toWhen)) {
+//                sum += i.amount
+//            }
+//            if (sum >= maximumBalance) {
+//                maximumBalance = sum
+//            }
+//        }
+//        return maximumBalance
+//    }
+//
+//    private fun calculateMinimumBalance() : Double {
+//        var sum = calculateStartBalance()
+//        var minimumBalance = sum
+//        for (i in Shared.expenseList) {
+//            calendar.timeInMillis = i.date
+//            val fromWhen = Calendar.getInstance()
+//            fromWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 2)
+//            fromWhen.set(Calendar.DAY_OF_MONTH, fromWhen.getActualMaximum(Calendar.DAY_OF_MONTH))
+//            val toWhen = Calendar.getInstance()
+//            toWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH))
+//            toWhen.set(Calendar.DAY_OF_MONTH, 1)
+//            if (calendar.after(fromWhen) && calendar.before(toWhen)) {
+//                sum += i.amount
+//            }
+//            if (sum <= minimumBalance) {
+//                minimumBalance = sum
+//            }
+//        }
+//        return minimumBalance
+//    }
 
-    private fun calculateMinimumBalance() : Double {
-        var sum = calculateStartBalance()
-        var minimumBalance = sum
-        for (i in Shared.expenseList) {
-            calendar.timeInMillis = i.date
-            val fromWhen = Calendar.getInstance()
-            fromWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 2)
-            fromWhen.set(Calendar.DAY_OF_MONTH, fromWhen.getActualMaximum(Calendar.DAY_OF_MONTH))
-            val toWhen = Calendar.getInstance()
-            toWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH))
-            toWhen.set(Calendar.DAY_OF_MONTH, 1)
-            if (calendar.after(fromWhen) && calendar.before(toWhen)) {
-                sum += i.amount
+    private fun calculateBalancePerDay() : MutableList<Double> {
+        val fromWhen = Calendar.getInstance()
+        fromWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 2)
+        fromWhen.set(Calendar.DAY_OF_MONTH, fromWhen.getActualMaximum(Calendar.DAY_OF_MONTH))
+        val toWhen = Calendar.getInstance()
+        toWhen.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH))
+        toWhen.set(Calendar.DAY_OF_MONTH, 1)
+        val groupedExpenses = Shared.expenseList.filter { element ->
+            calendar.timeInMillis = element.date
+            calendar.after(fromWhen) && calendar.before(toWhen)
+        }.groupBy {
+            it.date
+        }.toSortedMap()
+
+        var mapDayAmount = HashMap<Int, Double>()
+        groupedExpenses.forEach {
+            var sum = 0.0
+            it.value.forEach{ it2 ->
+                sum += it2.amount
             }
-            if (sum <= minimumBalance) {
-                minimumBalance = sum
-            }
+            var tmp02Calendar = Calendar.getInstance()
+            tmp02Calendar.timeInMillis = it.key
+            mapDayAmount[tmp02Calendar.get(Calendar.DAY_OF_MONTH)] = sum
         }
-        return minimumBalance
+
+        var tmpCalendar = Calendar.getInstance()
+        tmpCalendar.set(Calendar.MONTH, Calendar.getInstance().get(Calendar.MONTH) - 1)
+        tmpCalendar.set(Calendar.DAY_OF_MONTH, 1)
+
+        var balanceOfDay = mutableListOf<Double>()
+        balanceOfDay.add(calculateStartBalance())
+        for (i in 1..tmpCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+            balanceOfDay.add(0.0)
+        }
+        for (i in 2..tmpCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+            if (mapDayAmount.containsKey(tmpCalendar.get(Calendar.DAY_OF_MONTH))) {
+                balanceOfDay.removeAt(tmpCalendar.get(Calendar.DAY_OF_MONTH))
+                balanceOfDay.add(tmpCalendar.get(Calendar.DAY_OF_MONTH), mapDayAmount.getValue(tmpCalendar.get(Calendar.DAY_OF_MONTH)))
+            }
+            tmpCalendar.set(Calendar.DAY_OF_MONTH, i)
+        }
+
+        var balancePerDay = mutableListOf<Double>()
+        var sum = 0.0
+        for (i in 0 until balanceOfDay.size) {
+            sum += balanceOfDay[i]
+            balancePerDay.add(sum)
+        }
+        println(balanceOfDay)
+        println(balanceOfDay.size)
+        println(balancePerDay)
+        println(balancePerDay.size)
+        return balancePerDay
     }
 }

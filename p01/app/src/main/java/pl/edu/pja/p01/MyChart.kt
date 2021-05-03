@@ -32,6 +32,7 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
             println("Max$maximumBalance")
             val minimumBalance = calculateMinimumBalance()
             println("Min$minimumBalance")
+            val minimumBalanceAbs = abs(minimumBalance)
             drawLine(50f, 0f, 50f, height.toFloat(), paint)
             when {
                 maximumBalance <= 0 -> {
@@ -40,7 +41,6 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
                         drawText(i.toString().plus("\t"), xTmp, 30f, paint)
                         xTmp += (width.toFloat() - 50f) / daysInMonth
                     }
-                    val minimumBalanceAbs = abs(minimumBalance)
                     var yTmp = 15f
                     when {
                         minimumBalanceAbs >= 100000 -> {
@@ -75,10 +75,9 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
                                 yTmp += (height.toFloat() - 20f) / howManyParts
                             }
                         }
-                        minimumBalanceAbs in 10.0..100.0 -> {
-                            val rounded: Int = (minimumBalanceAbs.toInt() + 9) / 10 * 10
-                            val howManyParts = rounded
-                            for (i in 0..rounded step 1) {
+                        minimumBalanceAbs in 0.0..100.0 -> {
+                            val howManyParts: Int = minimumBalanceAbs.toInt() / 10
+                            for (i in 0..minimumBalanceAbs.toInt() step 1) {
                                 drawText("-$i", 0f, yTmp, paint)
                                 yTmp += (height.toFloat() - 20f) / howManyParts
                             }
@@ -125,10 +124,9 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
                                 yTmp += (height.toFloat() - 20f) / howManyParts
                             }
                         }
-                        maximumBalance in 10.0..100.0 -> {
-                            val rounded: Int = (maximumBalance.toInt() + 9) / 10 * 10
-                            val howManyParts = rounded
-                            for (i in 0..rounded step 1) {
+                        maximumBalance in 0.0..100.0 -> {
+                            val howManyParts: Int = maximumBalance.toInt() / 10
+                            for (i in 0..maximumBalance.toInt() step 1) {
                                 drawText(i.toString(), 0f, height.toFloat() - yTmp, paint)
                                 yTmp += (height.toFloat() - 20f) / howManyParts
                             }
@@ -136,48 +134,47 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
                     }
                 }
                 else -> {
-                    val sumBalanceAbs = maximumBalance + abs(minimumBalance)
-                    var rounded: Int
-                    var howManyParts: Int
+                    var roundedMaximumBalance = 0
                     when {
-                        sumBalanceAbs >= 100000 -> {
-                            rounded = (sumBalanceAbs.toInt() + 9999) / 10000 * 10000
-                            val howManyParts = rounded / 10000
+                        maximumBalance >= 100000 -> {
+                            roundedMaximumBalance = (maximumBalance.toInt() + 9999) / 10000 * 10000
                         }
-                        sumBalanceAbs in 10000.0..100000.0 -> {
-                            rounded = (sumBalanceAbs.toInt() + 999) / 1000 * 1000
-                            howManyParts = rounded / 1000
+                        maximumBalance in 10000.0..100000.0 -> {
+                            roundedMaximumBalance = (maximumBalance.toInt() + 999) / 1000 * 1000
                         }
-                        sumBalanceAbs in 1000.0..10000.0 -> {
-                            rounded = (sumBalanceAbs.toInt() + 99) / 100 * 100
-                            howManyParts = rounded / 100
+                        maximumBalance in 1000.0..10000.0 -> {
+                            roundedMaximumBalance = (maximumBalance.toInt() + 99) / 100 * 100
                         }
-                        sumBalanceAbs in 100.0..1000.0 -> {
-                            rounded = (sumBalanceAbs.toInt() + 9) / 10 * 10
-                            howManyParts = rounded / 10
+                        maximumBalance in 100.0..1000.0 -> {
+                            roundedMaximumBalance = (maximumBalance.toInt() + 9) / 10 * 10
                         }
-                        sumBalanceAbs in 10.0..100.0 -> {
-                            rounded = (sumBalanceAbs.toInt() + 9) / 10 * 10
-                            howManyParts = rounded
+                        maximumBalance in 0.0..100.0 -> {
+                            roundedMaximumBalance = maximumBalance.toInt()
                         }
                     }
-                        if (maximumBalance >= abs(minimumBalance)) {
-                        drawLine(
-                            50f,
-                            height.toFloat() * (abs(minimumBalance) / sumBalanceAbs).toFloat(),
-                            width.toFloat(),
-                            height.toFloat() * (abs(minimumBalance) / sumBalanceAbs).toFloat(),
-                            paint
-                        )
-                        for (i in 1..daysInMonth) {
-                            drawText(
-                                i.toString().plus("\t"), xTmp, height.toFloat() * (abs(
-                                    minimumBalance
-                                ) / (maximumBalance + abs(minimumBalance))).toFloat() + 30f, paint
-                            )
-                            xTmp += (width.toFloat() - 50f) / daysInMonth
+                    var roundedMinimumBalance = 0
+                    when {
+                        minimumBalanceAbs >= 100000 -> {
+                            roundedMinimumBalance = (minimumBalanceAbs.toInt() + 9999) / 10000 * 10000
                         }
-                    } else {
+                        minimumBalanceAbs in 10000.0..100000.0 -> {
+                            roundedMinimumBalance = (minimumBalanceAbs.toInt() + 999) / 1000 * 1000
+                        }
+                        minimumBalanceAbs in 1000.0..10000.0 -> {
+                            roundedMinimumBalance = (minimumBalanceAbs.toInt() + 99) / 100 * 100
+                        }
+                        minimumBalanceAbs in 100.0..1000.0 -> {
+                            roundedMinimumBalance = (minimumBalanceAbs.toInt() + 9) / 10 * 10
+                        }
+                        minimumBalanceAbs in 0.0..100.0 -> {
+                            roundedMinimumBalance = minimumBalanceAbs.toInt()
+                        }
+                    }
+                    var sumOfRoundedBalances = roundedMaximumBalance + roundedMinimumBalance
+                    var roundedSumOfRoundedBalances = 0
+                    var howManyParts = 0
+                    val sumBalanceAbs = maximumBalance + minimumBalanceAbs
+//                        if (maximumBalance <= minimumBalanceAbs) {
                         drawLine(
                             50f,
                             height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat(),
@@ -188,15 +185,184 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
                         for (i in 1..daysInMonth) {
                             drawText(
                                 i.toString().plus("\t"),
-                                xTmp,
-                                height.toFloat() * (maximumBalance / (abs(
-                                    minimumBalance
-                                ) + maximumBalance)).toFloat() + 30f,
-                                paint
+                                    xTmp,
+                                    height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + 30f,
+                                    paint
                             )
                             xTmp += (width.toFloat() - 50f) / daysInMonth
                         }
-                    }
+                            var yTmp = -5f
+                            when {
+                                sumOfRoundedBalances >= 100000 -> {
+                                    roundedSumOfRoundedBalances = (sumOfRoundedBalances + 9999) / 10000 * 10000
+                                    howManyParts = roundedSumOfRoundedBalances / 10000
+                                    for (i in 0..roundedMaximumBalance step 10000) {
+                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                    yTmp = 5f
+                                    for (i in 0..roundedMinimumBalance step 10000) {
+                                        if (i != 0) {
+                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+                                        }
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                }
+                                sumOfRoundedBalances in 10000..100000 -> {
+                                    roundedSumOfRoundedBalances = (sumOfRoundedBalances + 999) / 1000 * 1000
+                                    howManyParts = roundedSumOfRoundedBalances / 1000
+                                    for (i in 0..roundedMaximumBalance step 1000) {
+                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                    yTmp = 5f
+                                    for (i in 0..roundedMinimumBalance step 1000) {
+                                        if (i != 0) {
+                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+                                        }
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                }
+                                sumOfRoundedBalances in 1000..10000 -> {
+                                    roundedSumOfRoundedBalances = (sumOfRoundedBalances + 99) / 100 * 100
+                                    howManyParts = roundedSumOfRoundedBalances / 100
+                                    for (i in 0..roundedMaximumBalance step 100) {
+                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                    yTmp = 5f
+                                    for (i in 0..roundedMinimumBalance step 100) {
+                                        if (i != 0) {
+                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+                                        }
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                }
+                                sumOfRoundedBalances in 100..1000 -> {
+                                    roundedSumOfRoundedBalances = (sumOfRoundedBalances + 9) / 10 * 10
+                                    howManyParts = roundedSumOfRoundedBalances / 10
+                                    for (i in 0..roundedMaximumBalance step 10) {
+                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                    yTmp = 5f
+                                    for (i in 0..roundedMinimumBalance step 10) {
+                                        if (i != 0) {
+                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+                                        }
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                }
+                                sumOfRoundedBalances in 0..100 -> {
+                                    howManyParts = sumOfRoundedBalances
+                                    for (i in 0..roundedMaximumBalance step 1) {
+                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                    yTmp = 5f
+                                    for (i in 0..roundedMinimumBalance step 1) {
+                                        if (i != 0) {
+                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+                                        }
+                                        yTmp += (height.toFloat() - 50f) / howManyParts
+                                    }
+                                }
+                            }
+//                    } else {
+//                        drawLine(
+//                            50f,
+//                            height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat(),
+//                            width.toFloat(),
+//                            height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat(),
+//                            paint
+//                        )
+//                        for (i in 1..daysInMonth) {
+//                            drawText(
+//                                i.toString().plus("\t"),
+//                                xTmp,
+//                                height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + 30f,
+//                                paint
+//                            )
+//                            xTmp += (width.toFloat() - 50f) / daysInMonth
+//                        }
+//                            var yTmp = -5f
+//                            when {
+//                                sumOfRoundedBalances >= 100000 -> {
+//                                    roundedSumOfRoundedBalances = (sumOfRoundedBalances + 9999) / 10000 * 10000
+//                                    howManyParts = roundedSumOfRoundedBalances / 10000
+//                                    for (i in 0..roundedMaximumBalance step 10000) {
+//                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                    yTmp = 5f
+//                                    for (i in 0..roundedMinimumBalance step 10000) {
+//                                        if (i != 0) {
+//                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+//                                        }
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                }
+//                                sumOfRoundedBalances in 10000..100000 -> {
+//                                    roundedSumOfRoundedBalances = (sumOfRoundedBalances + 999) / 1000 * 1000
+//                                    howManyParts = roundedSumOfRoundedBalances / 1000
+//                                    for (i in 0..roundedMaximumBalance step 1000) {
+//                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                    yTmp = 5f
+//                                    for (i in 0..roundedMinimumBalance step 1000) {
+//                                        if (i != 0) {
+//                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+//                                        }
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                }
+//                                sumOfRoundedBalances in 1000..10000 -> {
+//                                    roundedSumOfRoundedBalances = (sumOfRoundedBalances + 99) / 100 * 100
+//                                    howManyParts = roundedSumOfRoundedBalances / 100
+//                                    for (i in 0..roundedMaximumBalance step 100) {
+//                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                    yTmp = 5f
+//                                    for (i in 0..roundedMinimumBalance step 100) {
+//                                        if (i != 0) {
+//                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+//                                        }
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                }
+//                                sumOfRoundedBalances in 100..1000 -> {
+//                                    roundedSumOfRoundedBalances = (sumOfRoundedBalances + 9) / 10 * 10
+//                                    howManyParts = roundedSumOfRoundedBalances / 10
+//                                    for (i in 0..roundedMaximumBalance step 10) {
+//                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                    yTmp = 5f
+//                                    for (i in 0..roundedMinimumBalance step 10) {
+//                                        if (i != 0) {
+//                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+//                                        }
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                }
+//                                sumOfRoundedBalances in 0..100 -> {
+//                                    howManyParts = sumOfRoundedBalances
+//                                    for (i in 0..roundedMaximumBalance step 1) {
+//                                        drawText(i.toString(), 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() - yTmp, paint)
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                    yTmp = 5f
+//                                    for (i in 0..roundedMinimumBalance step 1) {
+//                                        if (i != 0) {
+//                                            drawText("-$i", 0f, height.toFloat() * (maximumBalance / sumBalanceAbs).toFloat() + yTmp, paint)
+//                                        }
+//                                        yTmp += (height.toFloat() - 50f) / howManyParts
+//                                    }
+//                                }
+//                            }
+//                    }
                 }
             }
         }
@@ -255,6 +421,6 @@ class MyChart(context: Context, attrs: AttributeSet) : View(context, attrs) {
                 minimumBalance = sum
             }
         }
-        return sum
+        return minimumBalance
     }
 }

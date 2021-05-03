@@ -44,14 +44,14 @@ class ExpenseAdapter(): RecyclerView.Adapter<ExpenseItem>() {
         val builder = AlertDialog.Builder(parent.context)
         builder.setMessage("Czy na pewno chcesz usunać?")
                 .setCancelable(false)
-                .setPositiveButton("Yes") { _, _ ->
+                .setPositiveButton("Tak") { _, _ ->
                     Shared.expenseList.removeAt(position)
                     notifyDataSetChanged()
                 }
-                .setNegativeButton("No") { dialog, _ ->
+                .setNegativeButton("Nie") { dialog, _ ->
                     dialog.dismiss()
                 }
-        val alert = builder.create()
-        alert.show()
+                .create()
+                .show()
     }
 }

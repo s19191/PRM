@@ -29,8 +29,9 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(Intent(this, ChartActivity::class.java), REQ)
         }
 
-
         setupExpenseList()
+
+        updateBalance()
     }
 
     private fun setupExpenseList() {
@@ -43,7 +44,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         expenseAdapter.expenses = Shared.expenseList
-        updateBalance()
+//        updateBalance()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -64,13 +65,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
         binding.balance.text = sum.toString()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQ) {
-            if (resultCode == Activity.RESULT_OK) {
-                updateBalance()
-            }
-        } else super.onActivityResult(requestCode, resultCode, data)
     }
 }

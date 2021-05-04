@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">p01</string>
+    <string name="app_name">Manager Finansowy</string>
     <string name="add_button">Dodaj</string>
     <string name="place">Miejsce:</string>
     <string name="amount">Kwota:</string>

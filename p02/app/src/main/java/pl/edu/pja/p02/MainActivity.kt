@@ -14,8 +14,10 @@ import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
 import androidx.room.Room
 import pl.edu.pja.p02.databinding.ActivityMainBinding
+import pl.edu.pja.p02.model.TravelerDto
 import java.text.DateFormat
 import java.util.*
+import kotlin.concurrent.thread
 
 
 const val REQ = 1
@@ -107,7 +109,15 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQ01) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    contentResolver.delete(imgUri, data?.extras)
+                    val traveler = TravelerDto(
+                        description = null,
+                        photoName = imgUri.toString()
+                    )
+                    thread {
+                        traveler?.let {
+                            Shared.db?.travelers?.save(it)
+                        }
+                    }
                 }
             }
         } else super.onActivityResult(requestCode, resultCode, data)

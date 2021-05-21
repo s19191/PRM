@@ -1,6 +1,7 @@
 package pl.edu.pja.p02
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -17,25 +18,48 @@ class DescriptionActivity : AppCompatActivity() {
         setResult(Activity.RESULT_CANCELED)
     }
 
-    fun onSave(view: View) {
-        val bundle :Bundle ?= intent?.extras
-        if (bundle != null) {
-            val description = binding.description.text.toString()
-            var photoUri = bundle.getString("photoName")
-            val traveler = photoUri?.let {
-                TravelerDto(
-                    description = description,
-                    photoName = it
-                )
-            }
-            thread {
-                traveler?.let {
-                    Shared.db?.travelers?.save(it)
-                }
-            }
-            setResult(Activity.RESULT_OK)
-            finish()
+    fun onSave() {
+        val description = binding.description.text.toString()
+        var photoUri = getPhotoName()
+        val traveler = photoUri?.let {
+            TravelerDto(
+                description = description,
+                photoName = it
+            )
         }
+        thread {
+            traveler?.let {
+                Shared.db?.travelers?.save(it)
+            }
+        }
+        setResult(Activity.RESULT_OK)
         finish()
+    }
+
+    fun onCancel() {
+        var photoUri = getPhotoName()
+        val traveler = photoUri?.let {
+            TravelerDto(
+                description = null,
+                photoName = it
+            )
+        }
+        thread {
+            traveler?.let {
+                Shared.db?.travelers?.save(it)
+            }
+        }
+        setResult(Activity.RESULT_OK)
+        finish()
+    }
+
+    private fun getPhotoName() : String? {
+        val bundle :Bundle ?= intent?.extras
+        return if (bundle != null) {
+            var photoUri = bundle.getString("photoName")
+            photoUri
+        } else {
+            null;
+        }
     }
 }

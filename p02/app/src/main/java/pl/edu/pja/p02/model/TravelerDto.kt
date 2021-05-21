@@ -9,6 +9,6 @@ data class TravelerDto(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     @ColumnInfo()
-    val description: String,
+    val description: String?,
     val photoName: String
 )

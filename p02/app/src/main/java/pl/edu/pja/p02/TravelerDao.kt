@@ -14,4 +14,7 @@ interface TravelerDao {
 
     @Query("SELECT * FROM Traveler;")
     fun getAll() : List<TravelerDto>
+
+    @Query("SELECT * FROM Traveler WHERE photoName = :photoName")
+    fun getByPhotoName(photoName: String ) : TravelerDto
 }

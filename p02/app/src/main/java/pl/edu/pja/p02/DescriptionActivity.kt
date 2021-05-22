@@ -18,8 +18,11 @@ class DescriptionActivity : AppCompatActivity() {
         setResult(Activity.RESULT_CANCELED)
     }
 
-    fun onSave() {
-        val description = binding.description.text.toString()
+    fun onSave(view: View) {
+        var description = binding.description.text.toString()
+        if (description.isEmpty()) {
+            description = null.toString()
+        }
         var photoUri = getPhotoName()
         val traveler = photoUri?.let {
             TravelerDto(
@@ -36,7 +39,7 @@ class DescriptionActivity : AppCompatActivity() {
         finish()
     }
 
-    fun onCancel() {
+    fun onCancel(view: View) {
         var photoUri = getPhotoName()
         val traveler = photoUri?.let {
             TravelerDto(

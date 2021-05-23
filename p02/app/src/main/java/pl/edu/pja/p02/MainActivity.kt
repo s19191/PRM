@@ -1,19 +1,22 @@
 package pl.edu.pja.p02
 
+import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.room.Room
-import pl.edu.pja.p02.adapter.PhotoAdapter
-//import pl.edu.pja.p02.adapter.PhotoAdapter
+import pl.edu.pja.p02.adapter.GalleryAdapter
 import pl.edu.pja.p02.databinding.ActivityMainBinding
 import pl.edu.pja.p02.model.Traveler
 import pl.edu.pja.p02.model.TravelerDto
@@ -27,9 +30,10 @@ const val REQ01 = 2
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
-    private val photoAdapter by lazy { PhotoAdapter() }
+    private val galleryAdapter by lazy { GalleryAdapter() }
 
     private var imgUri = Uri.EMPTY
+    val MY_PERMISSIONS_REQUEST_CAMERA = 0
 
     private val paint = Paint().apply {
         color = Color.BLACK
@@ -49,6 +53,14 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.cameraButton.setOnClickListener {
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+//                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+//
+//                } else {
+//                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
+//                }
+//            }
+
             val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
             } else {
@@ -79,7 +91,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupExpenseList() {
         binding.photosList.apply {
-            adapter = photoAdapter
+            adapter = galleryAdapter
             layoutManager = GridLayoutManager(context, 3)
         }
     }
@@ -87,23 +99,29 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         thread {
-        Shared.db?.travelers?.getAll()?.let { it ->
-            val newList = it.map {
-                val photoBitmap: Bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    val source = ImageDecoder.createSource(this.contentResolver, it.photoName.toUri())
-                    ImageDecoder.decodeBitmap(source)
-                } else {
-                    MediaStore.Images.Media.getBitmap(this.contentResolver, it.photoName.toUri())
+            Shared.db?.travelers?.getAll()?.let { it ->
+                val newList = it.map {
+                    val photoBitmap = getPhotoBitmap(it.photoName.toUri())
+                    Traveler(
+                        it.id,
+                        it.description,
+                        photoBitmap,
+                        it.photoName.toUri()
+                    )
                 }
-                Traveler(
-                    it.id,
-                    it.description,
-                    photoBitmap
-                )
+                galleryAdapter.travelers = newList
             }
-            photoAdapter.travelers = newList
         }
+    }
+
+    private fun getPhotoBitmap(uri: Uri) : Bitmap {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(this.contentResolver, uri)
+            ImageDecoder.decodeBitmap(source)
+        } else {
+            MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
         }
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -116,12 +134,7 @@ class MainActivity : AppCompatActivity() {
 //                        tmpImage.compress(Bitmap.CompressFormat.JPEG, 100, it)
 //                    }
 //                }
-                val photoBitmap: Bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    val source = ImageDecoder.createSource(this.contentResolver, imgUri)
-                    ImageDecoder.decodeBitmap(source)
-                } else {
-                    MediaStore.Images.Media.getBitmap(this.contentResolver, imgUri)
-                }
+                val photoBitmap = getPhotoBitmap(imgUri)
                 val resultBitmap: Bitmap = photoBitmap.copy(Bitmap.Config.ARGB_8888, true)
                 val canvas = Canvas(resultBitmap)
 

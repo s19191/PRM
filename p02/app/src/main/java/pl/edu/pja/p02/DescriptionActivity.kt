@@ -1,7 +1,6 @@
 package pl.edu.pja.p02
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -11,28 +10,47 @@ import kotlin.concurrent.thread
 
 class DescriptionActivity : AppCompatActivity() {
     private val binding by lazy { ActivityDescriptionBinding.inflate(layoutInflater) }
+    private var editItemId = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         setResult(Activity.RESULT_CANCELED)
+
+        val bundle :Bundle ?= intent.extras
+        if (bundle!=null){
+            editItemId = bundle.getLong("itemId")
+        }
+
+        if (editItemId != 0L) {
+            thread {
+                Shared.db?.travelers?.getById(editItemId)?.let { it ->
+                    if (it.description != null) {
+                        binding.description.setText(it.description)
+                    }
+                }
+            }
+        }
     }
 
     fun onSave(view: View) {
         var description = binding.description.text.toString()
-        if (description.isEmpty()) {
-            description = null.toString()
-        }
-        var photoUri = getPhotoName()
-        val traveler = photoUri?.let {
-            TravelerDto(
-                description = description,
-                photoName = it
-            )
-        }
-        thread {
-            traveler?.let {
-                Shared.db?.travelers?.save(it)
+        if (editItemId == 0L) {
+            var photoUri = getPhotoName()
+            val traveler = photoUri?.let {
+                TravelerDto(
+                    description = description,
+                    photoName = it
+                )
+            }
+            thread {
+                traveler?.let {
+                    Shared.db?.travelers?.save(it)
+                }
+            }
+        } else {
+            thread {
+                Shared.db?.travelers?.update(editItemId, description)
             }
         }
         setResult(Activity.RESULT_OK)
@@ -40,16 +58,18 @@ class DescriptionActivity : AppCompatActivity() {
     }
 
     fun onCancel(view: View) {
-        var photoUri = getPhotoName()
-        val traveler = photoUri?.let {
-            TravelerDto(
-                description = null,
-                photoName = it
-            )
-        }
-        thread {
-            traveler?.let {
-                Shared.db?.travelers?.save(it)
+        if (editItemId == 0L) {
+            var photoUri = getPhotoName()
+            val traveler = photoUri?.let {
+                TravelerDto(
+                    description = null,
+                    photoName = it
+                )
+            }
+            thread {
+                traveler?.let {
+                    Shared.db?.travelers?.save(it)
+                }
             }
         }
         setResult(Activity.RESULT_OK)
@@ -62,7 +82,7 @@ class DescriptionActivity : AppCompatActivity() {
             var photoUri = bundle.getString("photoName")
             photoUri
         } else {
-            null;
+            null
         }
     }
 }

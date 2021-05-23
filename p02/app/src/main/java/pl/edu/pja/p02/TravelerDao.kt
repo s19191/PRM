@@ -1,9 +1,6 @@
 package pl.edu.pja.p02
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import pl.edu.pja.p02.model.TravelerDto
 
 @Dao
@@ -17,4 +14,13 @@ interface TravelerDao {
 
     @Query("SELECT * FROM Traveler WHERE photoName = :photoName")
     fun getByPhotoName(photoName: String ) : TravelerDto
+
+    @Query("SELECT * FROM Traveler WHERE id = :id")
+    fun getById(id: Long) : TravelerDto
+
+    @Query("UPDATE Traveler SET description = :description WHERE id = :id")
+    fun update(id: Long, description: String)
+
+    @Query("DELETE FROM Traveler WHERE id = :id")
+    fun delete(id: Long)
 }

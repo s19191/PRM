@@ -6,5 +6,6 @@ import android.net.Uri
 data class Traveler(
     val id: Long,
     val description: String?,
-    val photoBitmap: Bitmap
+    val photoBitmap: Bitmap,
+    val photoUri: Uri
 )

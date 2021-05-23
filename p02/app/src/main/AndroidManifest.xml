@@ -17,10 +17,6 @@
         <activity
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" />
-        <activity
-            android:name=".ScrollingActivity"
-            android:label="@string/title_activity_scrolling"
-            android:theme="@style/Theme.P02.NoActionBar" />
         <activity android:name=".DescriptionActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>

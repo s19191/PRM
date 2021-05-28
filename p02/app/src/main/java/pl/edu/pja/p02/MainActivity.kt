@@ -1,18 +1,15 @@
 package pl.edu.pja.p02
 
-import android.Manifest
 import android.app.Activity
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.room.Room
@@ -24,13 +21,12 @@ import java.text.DateFormat
 import java.util.*
 import kotlin.concurrent.thread
 
-
 const val REQ = 1
 const val REQ01 = 2
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
-    private val galleryAdapter by lazy { GalleryAdapter() }
+    private val galleryAdapter by lazy { GalleryAdapter(this) }
 
     private var imgUri = Uri.EMPTY
     val MY_PERMISSIONS_REQUEST_CAMERA = 0
@@ -51,7 +47,6 @@ class MainActivity : AppCompatActivity() {
             "travelerdb"
         ).build()
         setContentView(binding.root)
-
         binding.cameraButton.setOnClickListener {
 //            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 //                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
@@ -60,7 +55,26 @@ class MainActivity : AppCompatActivity() {
 //                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
 //                }
 //            }
-
+//            val filers = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+//            val cursor = contentResolver.query(filers, null, null, null, null)
+//            contentResolver.query(
+//                filers,
+//                arrayOf(MediaStore.Images.Media._ID),
+//                null,
+//                null,
+//                null
+//            )?.use {
+//                while (it.moveToNext()) {
+//                    val id = it.getInt(it.getColumnIndex(MediaStore.Images.Media._ID))
+//                    val imgUri = ContentUris.withAppendedId(filers, id.toLong())
+//                    imageUri = imgUri
+//                    contentResolver.openInputStream(imgUri)?.use {
+//                        BitmapFactory.decodeStream(it).let {
+//                            view.imageView.setImageBitmap(it)
+//                        }
+//                    }
+//                }
+//            }
             val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
             } else {
@@ -74,7 +88,6 @@ class MainActivity : AppCompatActivity() {
                 uri,
                 contentValues
             )
-            println(imgUri)
             val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
                 .let {
                 it.putExtra(MediaStore.EXTRA_OUTPUT, imgUri)
@@ -86,10 +99,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        setupExpenseList()
+        setupPhotosList()
     }
 
-    private fun setupExpenseList() {
+    private fun setupPhotosList() {
         binding.photosList.apply {
             adapter = galleryAdapter
             layoutManager = GridLayoutManager(context, 3)
@@ -109,7 +122,7 @@ class MainActivity : AppCompatActivity() {
                         it.photoName.toUri()
                     )
                 }
-                galleryAdapter.travelers = newList
+                galleryAdapter.travelers = newList.toMutableList()
             }
         }
     }
@@ -121,7 +134,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
         }
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

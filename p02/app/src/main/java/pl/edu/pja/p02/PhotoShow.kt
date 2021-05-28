@@ -20,7 +20,6 @@ class PhotoShow : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-
         val bundle :Bundle ?=intent.extras
         if (bundle!=null){
             binding.photoImageView.setImageBitmap(getPhotoBitmap(bundle.getString("photoUri")!!.toUri()))
@@ -39,6 +38,5 @@ class PhotoShow : AppCompatActivity() {
         } else {
             MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
         }
-
     }
 }

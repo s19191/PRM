@@ -25,8 +25,10 @@ class DescriptionActivity : AppCompatActivity() {
         if (editItemId != 0L) {
             thread {
                 Shared.db?.travelers?.getById(editItemId)?.let { it ->
-                    if (it.description != null) {
-                        binding.description.setText(it.description)
+                    this.runOnUiThread {
+                        if (it.description != null) {
+                            binding.description.setText(it.description)
+                        }
                     }
                 }
             }

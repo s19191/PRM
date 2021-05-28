@@ -9,15 +9,16 @@ import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.recyclerview.widget.RecyclerView
 import pl.edu.pja.p02.DescriptionActivity
+import pl.edu.pja.p02.MainActivity
 import pl.edu.pja.p02.PhotoShow
 import pl.edu.pja.p02.Shared
 import pl.edu.pja.p02.databinding.ItemPhotoBinding
 import pl.edu.pja.p02.model.Traveler
 import kotlin.concurrent.thread
 
-class GalleryAdapter() : RecyclerView.Adapter<PhotoItem>() {
+class GalleryAdapter(private val mainActivity: MainActivity) : RecyclerView.Adapter<PhotoItem>() {
     private val handler = HandlerCompat.createAsync(Looper.getMainLooper())
-    var travelers: List<Traveler> = emptyList()
+    var travelers: MutableList<Traveler> = mutableListOf()
         set(value) {
             field = value
             handler.post {
@@ -59,11 +60,14 @@ class GalleryAdapter() : RecyclerView.Adapter<PhotoItem>() {
             .setPositiveButton("Tak") { _, _ ->
                 thread {
                     Shared.db?.travelers?.delete(travelers[position].id)
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//                        parent.context.contentResolver.delete(travelers[position].photoUri, parent)
-//                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        parent.context.contentResolver.delete(travelers[position].photoUri, mainActivity.intent.extras)
+                    }
+                    travelers.removeAt(position)
+                    mainActivity.runOnUiThread{
+                        notifyDataSetChanged()
+                    }
                 }
-                notifyDataSetChanged()
             }
             .setNegativeButton("Nie") { dialog, _ ->
                 dialog.dismiss()

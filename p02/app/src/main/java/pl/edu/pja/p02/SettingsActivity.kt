@@ -24,23 +24,30 @@ class SettingsActivity : AppCompatActivity() {
         ).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             textSizeSpinner.adapter = adapter
+            textSizeSpinner.setSelection(4)
         }
 
-//        val spinner = binding.textSizeSpinner
-//        ArrayAdapter.createFromResource(
-//            this,
-//            R.array.textSize_array,
-//            android.R.layout.simple_spinner_item
-//        ).also { adapter ->
-//            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-//            spinner.adapter = adapter
-//        }
+        val textColorSpinner = binding.textColorSpinner
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.textColor_array,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            textColorSpinner.adapter = adapter
+        }
+
+        val bundle :Bundle ?=intent.extras
+        if (bundle!=null){
+            binding.textSizeSpinner.setSelection(bundle.getInt("textSize"))
+            binding.textColorSpinner.setSelection(bundle.getInt("textColor"))
+        }
     }
 
     fun onSave(view: View) {
         val intent = Intent().apply {
-            putExtra("textSize", binding.textSizeSpinner.selectedItem.toString().toFloat())
-
+            putExtra("textSize", binding.textSizeSpinner.selectedItemId)
+            putExtra("textColor", binding.textColorSpinner.selectedItemId)
         }
         setResult(Activity.RESULT_OK, intent)
         finish()

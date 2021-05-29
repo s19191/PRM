@@ -3,9 +3,14 @@ package pl.edu.pja.p02
 import android.Manifest
 import android.app.Activity
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -17,6 +22,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.room.Room
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import pl.edu.pja.p02.adapter.GalleryAdapter
 import pl.edu.pja.p02.databinding.ActivityMainBinding
 import pl.edu.pja.p02.model.Traveler
@@ -25,11 +32,13 @@ import java.text.DateFormat
 import java.util.*
 import kotlin.concurrent.thread
 
+
 const val CAM_REQ = 1
 const val DESCRIPTION_REQ = 2
 const val SETTINGS_REQ = 3
 
-const val MY_PERMISSIONS_REQUEST_CAMERA = 0
+const val MY_PERMISSIONS_REQUEST_CAMERA = 1
+const val MY_PERMISSIONS_REQUEST_LOCATION = 2
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -37,10 +46,9 @@ class MainActivity : AppCompatActivity() {
 
     private var photoUri = Uri.EMPTY
 
-    private val paint = Paint().apply {
-        color = Color.BLACK
-        textSize = 50f
-    }
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    private val prefs by lazy { getSharedPreferences("prefs", Context.MODE_PRIVATE) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,6 +80,10 @@ class MainActivity : AppCompatActivity() {
 //                }
 //            }
         setupPhotosList()
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), MY_PERMISSIONS_REQUEST_LOCATION)
+        }
     }
 
     override fun onResume() {
@@ -101,17 +113,20 @@ class MainActivity : AppCompatActivity() {
 
     fun onCamera(view: View) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
-            } else {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
-            }
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
         } else {
             openCamera()
         }
     }
 
     fun onSettings(view: View) {
-        startActivityForResult(Intent(this, SettingsActivity::class.java), SETTINGS_REQ)
+        val color = prefs.getInt("textColor", 0)
+        val size = prefs.getInt("textSize", 4)
+        val settingsIntent = Intent(this, SettingsActivity::class.java).apply {
+            putExtra("textColor", color)
+            putExtra("textSize", size)
+        }
+        startActivityForResult(settingsIntent, SETTINGS_REQ)
     }
 
     private fun openCamera() {
@@ -155,19 +170,62 @@ class MainActivity : AppCompatActivity() {
                 val dateFormatter = DateFormat.getDateInstance(DateFormat.MEDIUM)
                 val date = dateFormatter.format(calendar.time)
 
-                canvas.drawText(date, 10f, canvas.height.toFloat() - 10f, paint)
+                val textSizeTmp = Shared.sizes[prefs.getInt("textSize", 4)]
 
-                photoUri?.let { it ->
-                    contentResolver.openOutputStream(it)?.use {
-                        resultBitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
-                    }
+                val paint = Paint().apply {
+                    color = Shared.colors[prefs.getInt("textColor", 0)]
+                    textSize = textSizeTmp
                 }
 
-                startActivityForResult(Intent(this, DescriptionActivity::class.java)
-                    .putExtra("photoName", photoUri.toString()),
-                    DESCRIPTION_REQ
-                )
+                canvas.drawText(date, 10f, canvas.height.toFloat() - 10f, paint)
 
+                if (ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    this.runOnUiThread {
+                        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+                        fusedLocationClient.lastLocation
+                            .addOnSuccessListener { location ->
+                                val geocoder = Geocoder(this, Locale.getDefault())
+                                val addresses: List<Address> = geocoder.getFromLocation(
+                                    location.latitude,
+                                    location.longitude,
+                                    1
+                                )
+                                val cityName: String = addresses[0].locality
+                                val countryName: String = addresses[0].countryName
+                                val tmp = "$cityName $countryName"
+                                canvas.drawText(
+                                    tmp,
+                                    10f,
+                                    canvas.height.toFloat() - textSizeTmp + 10f,
+                                    paint
+                                )
+
+                                photoUri?.let { it ->
+                                    contentResolver.openOutputStream(it)?.use {
+                                        resultBitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+                                    }
+                                }
+
+                                val descriptionIntent =
+                                    Intent(this, DescriptionActivity::class.java).let {
+                                        it.putExtra("photoUri", photoUri.toString())
+                                        it.putExtra("latitude", location.latitude)
+                                        it.putExtra("longitude", location.longitude)
+                                    }
+                                startActivityForResult(
+                                    descriptionIntent,
+                                    DESCRIPTION_REQ
+                                )
+                            }
+                    }
+                }
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     contentResolver.delete(photoUri, data?.extras)
@@ -193,8 +251,15 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == SETTINGS_REQ) {
             if (resultCode == Activity.RESULT_OK) {
-                data?.getFloatExtra("textSize", 10f).let {
-                    paint.textSize = it!!
+                data?.getLongExtra("textSize", 50).let {
+                    prefs.edit()
+                        .putInt("textSize", it!!.toInt())
+                        .apply()
+                }
+                data?.getLongExtra("textColor", 0).let {
+                    prefs.edit()
+                        .putInt("textColor", it!!.toInt())
+                        .apply()
                 }
             }
         } else super.onActivityResult(requestCode, resultCode, data)
@@ -205,7 +270,8 @@ class MainActivity : AppCompatActivity() {
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+            && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             openCamera()
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)

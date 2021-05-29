@@ -24,4 +24,17 @@
         <item>140</item>
         <item>150</item>
     </string-array>
+    <string-array name="textColor_array">
+        <item>BLACK</item>
+        <item>BLUE</item>
+        <item>CYAN</item>
+        <item>LIGHT GRAY</item>
+        <item>DARK GRAY</item>
+        <item>GRAY</item>
+        <item>GREEN</item>
+        <item>MAGENTA</item>
+        <item>RED</item>
+        <item>WHITE</item>
+        <item>YELLOW</item>
+    </string-array>
 </resources>

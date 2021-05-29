@@ -81,7 +81,7 @@ class DescriptionActivity : AppCompatActivity() {
     private fun getPhotoName() : String? {
         val bundle :Bundle ?= intent?.extras
         return if (bundle != null) {
-            var photoUri = bundle.getString("photoName")
+            var photoUri = bundle.getString("photoUri")
             photoUri
         } else {
             null

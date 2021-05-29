@@ -21,12 +21,6 @@ class PhotoShowActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-//        val bundle :Bundle ?= intent.extras
-//        if (bundle!=null){
-//            binding.photoImageView.setImageBitmap(getPhotoBitmap(bundle.getString("photoUri")!!.toUri()))
-//            editItemId = bundle.getLong("itemId")
-//        }
-
         val bundle :Bundle ?= intent.extras
         if (bundle!=null){
             editItemId = bundle.getLong("itemId")

@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -38,7 +39,6 @@ class MainActivity : AppCompatActivity() {
 
     private val paint = Paint().apply {
         color = Color.BLACK
-        strokeWidth = 10f
         textSize = 50f
     }
 
@@ -50,15 +50,6 @@ class MainActivity : AppCompatActivity() {
             "travelerdb"
         ).build()
         setContentView(binding.root)
-        binding.cameraButton.setOnClickListener {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
-                } else {
-                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
-                }
-            } else {
-                openCamera()
-            }
             //TODO: Możliwość pobierania zdjęć od razu z pamięci (MediaStore)
 //            val filers = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 //            val cursor = contentResolver.query(filers, null, null, null, null)
@@ -80,12 +71,6 @@ class MainActivity : AppCompatActivity() {
 //                    }
 //                }
 //            }
-        }
-
-        binding.settingsButton.setOnClickListener {
-            startActivityForResult(Intent(this, SettingsActivity::class.java), SETTINGS_REQ)
-        }
-
         setupPhotosList()
     }
 
@@ -112,6 +97,21 @@ class MainActivity : AppCompatActivity() {
             adapter = galleryAdapter
             layoutManager = GridLayoutManager(context, 3)
         }
+    }
+
+    fun onCamera(view: View) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+            } else {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
+            }
+        } else {
+            openCamera()
+        }
+    }
+
+    fun onSettings(view: View) {
+        startActivityForResult(Intent(this, SettingsActivity::class.java), SETTINGS_REQ)
     }
 
     private fun openCamera() {
@@ -187,6 +187,14 @@ class MainActivity : AppCompatActivity() {
                     traveler?.let {
                         Shared.db?.travelers?.save(it)
                     }
+                }
+            }
+        } else super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == SETTINGS_REQ) {
+            if (resultCode == Activity.RESULT_OK) {
+                data?.getFloatExtra("textSize", 10f).let {
+                    paint.textSize = it!!
                 }
             }
         } else super.onActivityResult(requestCode, resultCode, data)

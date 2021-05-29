@@ -42,7 +42,7 @@ class DescriptionActivity : AppCompatActivity() {
             val traveler = photoUri?.let {
                 TravelerDto(
                     description = description,
-                    photoName = it
+                    photoUri = it
                 )
             }
             thread {
@@ -65,7 +65,7 @@ class DescriptionActivity : AppCompatActivity() {
             val traveler = photoUri?.let {
                 TravelerDto(
                     description = null,
-                    photoName = it
+                    photoUri = it
                 )
             }
             thread {

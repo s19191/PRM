@@ -13,17 +13,33 @@ import androidx.core.net.toUri
 import pl.edu.pja.p02.databinding.ActivityPhotoShowBinding
 import kotlin.concurrent.thread
 
-class PhotoShow : AppCompatActivity() {
+class PhotoShowActivity : AppCompatActivity() {
     private val binding by lazy { ActivityPhotoShowBinding.inflate(layoutInflater) }
     private var editItemId = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        val bundle :Bundle ?=intent.extras
+
+//        val bundle :Bundle ?= intent.extras
+//        if (bundle!=null){
+//            binding.photoImageView.setImageBitmap(getPhotoBitmap(bundle.getString("photoUri")!!.toUri()))
+//            editItemId = bundle.getLong("itemId")
+//        }
+
+        val bundle :Bundle ?= intent.extras
         if (bundle!=null){
-            binding.photoImageView.setImageBitmap(getPhotoBitmap(bundle.getString("photoUri")!!.toUri()))
             editItemId = bundle.getLong("itemId")
+        }
+
+        if (editItemId != 0L) {
+            thread {
+                Shared.db?.travelers?.getById(editItemId)?.let { it ->
+                    this.runOnUiThread {
+                        binding.photoImageView.setImageBitmap(getPhotoBitmap(it.photoUri.toUri()))
+                    }
+                }
+            }
         }
     }
 

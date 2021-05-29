@@ -8,9 +8,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.recyclerview.widget.RecyclerView
-import pl.edu.pja.p02.DescriptionActivity
 import pl.edu.pja.p02.MainActivity
-import pl.edu.pja.p02.PhotoShow
+import pl.edu.pja.p02.PhotoShowActivity
 import pl.edu.pja.p02.Shared
 import pl.edu.pja.p02.databinding.ItemPhotoBinding
 import pl.edu.pja.p02.model.Traveler
@@ -39,10 +38,9 @@ class GalleryAdapter(private val mainActivity: MainActivity) : RecyclerView.Adap
                 return@setOnLongClickListener true
             }
             binding.root.setOnClickListener {
-                parent.context.startActivity(Intent(parent.context, PhotoShow::class.java).apply {
-                    putExtra("itemId", travelers[holder.layoutPosition].id)
-                    putExtra("photoUri", travelers[holder.layoutPosition].photoUri.toString())
-                    })
+                parent.context.startActivity(Intent(parent.context, PhotoShowActivity::class.java)
+                    .putExtra("itemId", travelers[holder.layoutPosition].id)
+                )
             }
         }
     }

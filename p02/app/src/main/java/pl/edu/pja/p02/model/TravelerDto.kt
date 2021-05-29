@@ -10,5 +10,5 @@ data class TravelerDto(
     val id: Long = 0,
     @ColumnInfo()
     val description: String?,
-    val photoName: String
+    val photoUri: String
 )

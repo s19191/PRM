@@ -1,15 +1,18 @@
 package pl.edu.pja.p02
 
+import android.Manifest
 import android.app.Activity
-import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.room.Room
@@ -21,23 +24,23 @@ import java.text.DateFormat
 import java.util.*
 import kotlin.concurrent.thread
 
-const val REQ = 1
-const val REQ01 = 2
+const val CAM_REQ = 1
+const val DESCRIPTION_REQ = 2
+const val SETTINGS_REQ = 3
+
+const val MY_PERMISSIONS_REQUEST_CAMERA = 0
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private val galleryAdapter by lazy { GalleryAdapter(this) }
 
-    private var imgUri = Uri.EMPTY
-    val MY_PERMISSIONS_REQUEST_CAMERA = 0
+    private var photoUri = Uri.EMPTY
 
     private val paint = Paint().apply {
         color = Color.BLACK
         strokeWidth = 10f
         textSize = 50f
     }
-
-    private val calendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,13 +51,15 @@ class MainActivity : AppCompatActivity() {
         ).build()
         setContentView(binding.root)
         binding.cameraButton.setOnClickListener {
-//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-//                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
-//
-//                } else {
-//                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
-//                }
-//            }
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+                } else {
+                    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
+                }
+            } else {
+                openCamera()
+            }
+            //TODO: Możliwość pobierania zdjęć od razu z pamięci (MediaStore)
 //            val filers = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
 //            val cursor = contentResolver.query(filers, null, null, null, null)
 //            contentResolver.query(
@@ -75,31 +80,31 @@ class MainActivity : AppCompatActivity() {
 //                    }
 //                }
 //            }
-            val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-            } else {
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            }
-            val contentValues = ContentValues().apply {
-                put(MediaStore.Images.Media.DISPLAY_NAME, "traveler.jpg")
-                put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            }
-            imgUri = contentResolver?.insert(
-                uri,
-                contentValues
-            )
-            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                .let {
-                it.putExtra(MediaStore.EXTRA_OUTPUT, imgUri)
-            }
-            startActivityForResult(cameraIntent, REQ)
         }
 
         binding.settingsButton.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+            startActivityForResult(Intent(this, SettingsActivity::class.java), SETTINGS_REQ)
         }
 
         setupPhotosList()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        thread {
+            Shared.db?.travelers?.getAll()?.let { it ->
+                val newList = it.map {
+                    val photoBitmap = getPhotoBitmap(it.photoUri.toUri())
+                    Traveler(
+                        it.id,
+                        it.description,
+                        photoBitmap,
+                        it.photoUri.toUri()
+                    )
+                }
+                galleryAdapter.travelers = newList.toMutableList()
+            }
+        }
     }
 
     private fun setupPhotosList() {
@@ -109,22 +114,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        thread {
-            Shared.db?.travelers?.getAll()?.let { it ->
-                val newList = it.map {
-                    val photoBitmap = getPhotoBitmap(it.photoName.toUri())
-                    Traveler(
-                        it.id,
-                        it.description,
-                        photoBitmap,
-                        it.photoName.toUri()
-                    )
-                }
-                galleryAdapter.travelers = newList.toMutableList()
-            }
+    private fun openCamera() {
+        val uri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        } else {
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         }
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "traveler.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+        }
+        photoUri = contentResolver?.insert(
+            uri,
+            contentValues
+        )
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).let {
+            it.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+        }
+        startActivityForResult(cameraIntent, CAM_REQ)
     }
 
     private fun getPhotoBitmap(uri: Uri) : Bitmap {
@@ -137,53 +144,62 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQ) {
+        if (requestCode == CAM_REQ) {
             if (resultCode == Activity.RESULT_OK) {
-//                if (resultCode == Activity.RESULT_OK && data != null) {
-//                val tmpImage = data.extras?.get("data") as Bitmap
-//                imgUri?.let { it ->
-//                    contentResolver.openOutputStream(it)?.use {
-//                        tmpImage.compress(Bitmap.CompressFormat.JPEG, 100, it)
-//                    }
-//                }
-                val photoBitmap = getPhotoBitmap(imgUri)
+                val photoBitmap = getPhotoBitmap(photoUri)
                 val resultBitmap: Bitmap = photoBitmap.copy(Bitmap.Config.ARGB_8888, true)
+
                 val canvas = Canvas(resultBitmap)
 
+                val calendar = Calendar.getInstance()
                 val dateFormatter = DateFormat.getDateInstance(DateFormat.MEDIUM)
                 val date = dateFormatter.format(calendar.time)
 
                 canvas.drawText(date, 10f, canvas.height.toFloat() - 10f, paint)
 
-                imgUri?.let { it ->
+                photoUri?.let { it ->
                     contentResolver.openOutputStream(it)?.use {
                         resultBitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
                     }
                 }
 
-                startActivityForResult(Intent(this, DescriptionActivity::class.java).putExtra("photoName", imgUri.toString()), REQ01)
+                startActivityForResult(Intent(this, DescriptionActivity::class.java)
+                    .putExtra("photoName", photoUri.toString()),
+                    DESCRIPTION_REQ
+                )
 
             } else {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    contentResolver.delete(imgUri, data?.extras)
+                    contentResolver.delete(photoUri, data?.extras)
+                } else {
+                    //TODO: Dodanie alternatywnego usuwania dla starszego antka
                 }
             }
         } else super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == REQ01) {
+        if (requestCode == DESCRIPTION_REQ) {
             if (resultCode == Activity.RESULT_CANCELED) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    val traveler = TravelerDto(
-                        description = null,
-                        photoName = imgUri.toString()
-                    )
-                    thread {
-                        traveler?.let {
-                            Shared.db?.travelers?.save(it)
-                        }
+                val traveler = TravelerDto(
+                    description = null,
+                    photoUri = photoUri.toString()
+                )
+                thread {
+                    traveler?.let {
+                        Shared.db?.travelers?.save(it)
                     }
                 }
             }
         } else super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            openCamera()
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 }

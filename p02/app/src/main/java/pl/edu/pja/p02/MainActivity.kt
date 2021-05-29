@@ -203,7 +203,7 @@ class MainActivity : AppCompatActivity() {
                                 canvas.drawText(
                                     tmp,
                                     10f,
-                                    canvas.height.toFloat() - textSizeTmp + 10f,
+                                    canvas.height.toFloat() - textSizeTmp - 10f,
                                     paint
                                 )
 

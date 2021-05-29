@@ -25,16 +25,16 @@
         <item>150</item>
     </string-array>
     <string-array name="textColor_array">
-        <item>BLACK</item>
-        <item>BLUE</item>
-        <item>CYAN</item>
-        <item>LIGHT GRAY</item>
-        <item>DARK GRAY</item>
-        <item>GRAY</item>
-        <item>GREEN</item>
-        <item>MAGENTA</item>
-        <item>RED</item>
-        <item>WHITE</item>
-        <item>YELLOW</item>
+        <item>Czarny</item>
+        <item>Niebieski</item>
+        <item>Cyjan</item>
+        <item>Jasny szary</item>
+        <item>Ciemny szary</item>
+        <item>Szary</item>
+        <item>Zielony</item>
+        <item>Magenta</item>
+        <item>Czarwony</item>
+        <item>Biały</item>
+        <item>Żółty</item>
     </string-array>
 </resources>

@@ -2,6 +2,7 @@ package pl.edu.pja.p02
 
 import android.Manifest
 import android.app.Activity
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -58,27 +59,6 @@ class MainActivity : AppCompatActivity() {
             "travelerdb"
         ).build()
         setContentView(binding.root)
-            //TODO: Możliwość pobierania zdjęć od razu z pamięci (MediaStore)
-//            val filers = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-//            val cursor = contentResolver.query(filers, null, null, null, null)
-//            contentResolver.query(
-//                filers,
-//                arrayOf(MediaStore.Images.Media._ID),
-//                null,
-//                null,
-//                null
-//            )?.use {
-//                while (it.moveToNext()) {
-//                    val id = it.getInt(it.getColumnIndex(MediaStore.Images.Media._ID))
-//                    val imgUri = ContentUris.withAppendedId(filers, id.toLong())
-//                    imageUri = imgUri
-//                    contentResolver.openInputStream(imgUri)?.use {
-//                        BitmapFactory.decodeStream(it).let {
-//                            view.imageView.setImageBitmap(it)
-//                        }
-//                    }
-//                }
-//            }
         setupPhotosList()
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -88,19 +68,39 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        thread {
-            Shared.db?.travelers?.getAll()?.let { it ->
-                val newList = it.map {
-                    val photoBitmap = getPhotoBitmap(it.photoUri.toUri())
-                    Traveler(
-                        it.id,
-                        it.description,
-                        photoBitmap,
-                        it.photoUri.toUri()
-                    )
-                }
-                galleryAdapter.travelers = newList.toMutableList()
+        var uris: MutableList<Uri> = mutableListOf()
+        val filers = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        contentResolver.query(
+            filers,
+            arrayOf(MediaStore.Images.Media._ID),
+            null,
+            null,
+            null
+        )?.use {
+            while (it.moveToNext()) {
+                val id = it.getInt(it.getColumnIndex(MediaStore.Images.Media._ID))
+                val imgUri = ContentUris.withAppendedId(filers, id.toLong())
+                uris.add(imgUri)
             }
+        }
+        println(uris)
+        thread {
+            var newList: MutableList<Traveler> = mutableListOf()
+            uris.forEach { uri ->
+                val photoBitmap = getPhotoBitmap(uri)
+                Shared.db?.travelers?.getByPhotoUri(uri.toString())?.let { tDto ->
+                    Traveler(
+                        tDto.id,
+                        tDto.description,
+                        photoBitmap,
+                        uri
+                    ).let {
+                        newList.add(it)
+                    }
+                }
+            }
+            println(newList)
+            galleryAdapter.travelers = newList
         }
     }
 

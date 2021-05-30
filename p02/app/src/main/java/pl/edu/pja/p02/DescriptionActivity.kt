@@ -1,6 +1,7 @@
 package pl.edu.pja.p02
 
 import android.app.Activity
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +16,6 @@ class DescriptionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        setResult(Activity.RESULT_CANCELED)
 
         val bundle :Bundle ?= intent.extras
         if (bundle != null) {
@@ -39,15 +39,9 @@ class DescriptionActivity : AppCompatActivity() {
         var description = binding.description.text.toString()
         if (editItemId == 0L) {
             var photoUri = getPhotoName()
-            val traveler = photoUri?.let {
-                TravelerDto(
-                    description = description,
-                    photoUri = it
-                )
-            }
             thread {
-                traveler?.let {
-                    Shared.db?.travelers?.save(it)
+                photoUri?.let {
+                    Shared.db?.travelers?.update(it, description)
                 }
             }
         } else {
@@ -55,33 +49,17 @@ class DescriptionActivity : AppCompatActivity() {
                 Shared.db?.travelers?.update(editItemId, description)
             }
         }
-        setResult(Activity.RESULT_OK)
         finish()
     }
 
     fun onCancel(view: View) {
-        if (editItemId == 0L) {
-            var photoUri = getPhotoName()
-            val traveler = photoUri?.let {
-                TravelerDto(
-                    description = null,
-                    photoUri = it
-                )
-            }
-            thread {
-                traveler?.let {
-                    Shared.db?.travelers?.save(it)
-                }
-            }
-        }
-        setResult(Activity.RESULT_OK)
         finish()
     }
 
     private fun getPhotoName() : String? {
         val bundle :Bundle ?= intent?.extras
         return if (bundle != null) {
-            var photoUri = bundle.getString("photoUri")
+            val photoUri = bundle.getString("photoUri")
             photoUri
         } else {
             null

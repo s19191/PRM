@@ -21,6 +21,9 @@ interface TravelerDao {
     @Query("UPDATE Traveler SET description = :description WHERE id = :id")
     fun update(id: Long, description: String)
 
+    @Query("UPDATE Traveler SET description = :description WHERE photoUri = :photoUri")
+    fun update(photoUri: String, description: String)
+
     @Query("DELETE FROM Traveler WHERE id = :id")
     fun delete(id: Long)
 }

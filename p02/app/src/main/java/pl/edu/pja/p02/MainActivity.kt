@@ -33,7 +33,6 @@ import java.text.DateFormat
 import java.util.*
 import kotlin.concurrent.thread
 
-
 const val CAM_REQ = 1
 const val DESCRIPTION_REQ = 2
 const val SETTINGS_REQ = 3
@@ -161,6 +160,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupGeofences() {
+
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == CAM_REQ) {
             if (resultCode == Activity.RESULT_OK) {
@@ -174,9 +177,10 @@ class MainActivity : AppCompatActivity() {
                 val date = dateFormatter.format(calendar.time)
 
                 val textSizeTmp = Shared.sizes[prefs.getInt("textSize", 4)]
+                val textColorTmp = Shared.colors[prefs.getInt("textColor", 0)]
 
                 val paint = Paint().apply {
-                    color = Shared.colors[prefs.getInt("textColor", 0)]
+                    color = textColorTmp
                     textSize = textSizeTmp
                 }
 
@@ -216,16 +220,24 @@ class MainActivity : AppCompatActivity() {
                                     }
                                 }
 
+                                val traveler = TravelerDto(
+                                    description = null,
+                                    photoUri = photoUri.toString(),
+                                    latitude = location.latitude,
+                                    longitude = location.longitude
+                                )
+                                thread {
+                                    traveler?.let {
+                                        Shared.db?.travelers?.save(it)
+                                    }
+                                }
+                            }.let {
                                 val descriptionIntent =
                                     Intent(this, DescriptionActivity::class.java).let {
                                         it.putExtra("photoUri", photoUri.toString())
-                                        it.putExtra("latitude", location.latitude)
-                                        it.putExtra("longitude", location.longitude)
                                     }
-                                startActivityForResult(
-                                    descriptionIntent,
-                                    DESCRIPTION_REQ
-                                )
+
+                                startActivity(descriptionIntent)
                             }
                     }
                 }
@@ -234,20 +246,6 @@ class MainActivity : AppCompatActivity() {
                     contentResolver.delete(photoUri, data?.extras)
                 } else {
                     //TODO: Dodanie alternatywnego usuwania dla starszego antka
-                }
-            }
-        } else super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == DESCRIPTION_REQ) {
-            if (resultCode == Activity.RESULT_CANCELED) {
-                val traveler = TravelerDto(
-                    description = null,
-                    photoUri = photoUri.toString()
-                )
-                thread {
-                    traveler?.let {
-                        Shared.db?.travelers?.save(it)
-                    }
                 }
             }
         } else super.onActivityResult(requestCode, resultCode, data)

@@ -18,7 +18,7 @@ class DescriptionActivity : AppCompatActivity() {
         setResult(Activity.RESULT_CANCELED)
 
         val bundle :Bundle ?= intent.extras
-        if (bundle!=null){
+        if (bundle != null) {
             editItemId = bundle.getLong("itemId")
         }
 

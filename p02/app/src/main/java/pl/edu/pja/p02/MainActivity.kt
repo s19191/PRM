@@ -6,11 +6,12 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ImageDecoder
+import android.graphics.Paint
 import android.location.Address
 import android.location.Geocoder
-import android.location.Location
-import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -122,9 +123,11 @@ class MainActivity : AppCompatActivity() {
     fun onSettings(view: View) {
         val color = prefs.getInt("textColor", 0)
         val size = prefs.getInt("textSize", 4)
+        val radius = prefs.getInt("radius", 1000)
         val settingsIntent = Intent(this, SettingsActivity::class.java).apply {
             putExtra("textColor", color)
             putExtra("textSize", size)
+            putExtra("radius", radius)
         }
         startActivityForResult(settingsIntent, SETTINGS_REQ)
     }
@@ -260,6 +263,13 @@ class MainActivity : AppCompatActivity() {
                     prefs.edit()
                         .putInt("textColor", it!!.toInt())
                         .apply()
+                }
+                data?.getIntExtra("radius", 0).let {
+                    if (it != 0) {
+                        prefs.edit()
+                            .putInt("radius", it!!)
+                            .apply()
+                    }
                 }
             }
         } else super.onActivityResult(requestCode, resultCode, data)

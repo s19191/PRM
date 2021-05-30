@@ -37,10 +37,11 @@ class SettingsActivity : AppCompatActivity() {
             textColorSpinner.adapter = adapter
         }
 
-        val bundle :Bundle ?=intent.extras
-        if (bundle!=null){
+        val bundle :Bundle ?= intent.extras
+        if (bundle != null) {
             binding.textSizeSpinner.setSelection(bundle.getInt("textSize"))
             binding.textColorSpinner.setSelection(bundle.getInt("textColor"))
+            binding.radius.setText(bundle.getInt("radius").toString())
         }
     }
 
@@ -48,6 +49,9 @@ class SettingsActivity : AppCompatActivity() {
         val intent = Intent().apply {
             putExtra("textSize", binding.textSizeSpinner.selectedItemId)
             putExtra("textColor", binding.textColorSpinner.selectedItemId)
+            if (binding.radius.text.toString().isNotEmpty() && binding.radius.text.toString().toInt() != 0) {
+                putExtra("radius", binding.radius.text.toString().toInt())
+            }
         }
         setResult(Activity.RESULT_OK, intent)
         finish()

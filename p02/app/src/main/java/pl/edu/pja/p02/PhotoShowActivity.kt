@@ -22,7 +22,7 @@ class PhotoShowActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val bundle :Bundle ?= intent.extras
-        if (bundle!=null){
+        if (bundle != null) {
             editItemId = bundle.getLong("itemId")
         }
 

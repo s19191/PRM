@@ -7,7 +7,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.GeofencingEvent
 
-class Notifier  : BroadcastReceiver() {
+class Notifier : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         println("Poza domem!")
         val event = intent?.let {
@@ -18,7 +18,7 @@ class Notifier  : BroadcastReceiver() {
         event?.triggeringGeofences?.first()?.requestId
         context?.let {
 
-            val notification = NotificationCompat.Builder(it, "pl.edu.pja.kwarantanna13.Geofence")
+            val notification = NotificationCompat.Builder(it, "pl.edu.pja.p02.Geofence")
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("Wyszedłeś z kwarantanny")
                 .build()

@@ -4,7 +4,7 @@ import android.graphics.Color
 
 object Shared {
     var db: AppDatabase? = null
-    var sizes: MutableList<Float> = mutableListOf(
+    val sizes: MutableList<Float> = mutableListOf(
         10f,
         20f,
         30f,
@@ -34,5 +34,4 @@ object Shared {
         Color.WHITE,
         Color.YELLOW
     )
-
 }

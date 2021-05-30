@@ -50,7 +50,7 @@ class SettingsActivity : AppCompatActivity() {
             putExtra("textSize", binding.textSizeSpinner.selectedItemId)
             putExtra("textColor", binding.textColorSpinner.selectedItemId)
             if (binding.radius.text.toString().isNotEmpty() && binding.radius.text.toString().toInt() != 0) {
-                putExtra("radius", binding.radius.text.toString().toInt())
+                putExtra("radius", binding.radius.text.toString().toFloat())
             }
         }
         setResult(Activity.RESULT_OK, intent)

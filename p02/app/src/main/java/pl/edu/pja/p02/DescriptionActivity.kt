@@ -1,12 +1,9 @@
 package pl.edu.pja.p02
 
-import android.app.Activity
-import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import pl.edu.pja.p02.databinding.ActivityDescriptionBinding
-import pl.edu.pja.p02.model.TravelerDto
 import kotlin.concurrent.thread
 
 class DescriptionActivity : AppCompatActivity() {

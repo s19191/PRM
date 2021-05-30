@@ -1,7 +1,9 @@
 package pl.edu.pja.p02
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.PendingIntent
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
@@ -21,11 +23,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.net.toUri
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.room.Room
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import pl.edu.pja.p02.adapter.GalleryAdapter
 import pl.edu.pja.p02.databinding.ActivityMainBinding
 import pl.edu.pja.p02.model.Traveler
@@ -35,8 +35,7 @@ import java.util.*
 import kotlin.concurrent.thread
 
 const val CAM_REQ = 1
-const val DESCRIPTION_REQ = 2
-const val SETTINGS_REQ = 3
+const val SETTINGS_REQ = 2
 
 const val MY_PERMISSIONS_REQUEST_CAMERA = 1
 const val MY_PERMISSIONS_REQUEST_LOCATION = 2
@@ -51,6 +50,45 @@ class MainActivity : AppCompatActivity() {
 
     private val prefs by lazy { getSharedPreferences("prefs", Context.MODE_PRIVATE) }
 
+    lateinit var geofencingClient: GeofencingClient
+
+    @SuppressLint("MissingPermission")
+    private fun setGeofence(requestCode: Int, latitude: Double, longitude: Double) {
+        val pi = PendingIntent.getBroadcast(
+            applicationContext,
+            1,
+            Intent(this, Notifier::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        geofencingClient.addGeofences(
+            genRequest(latitude, longitude),
+            pi
+        ).run {
+            addOnCompleteListener {
+                runOnUiThread {
+                    println("AAAAA")
+                }
+            }
+        }
+    }
+
+    private fun genRequest(latitude: Double, longitude: Double): GeofencingRequest {
+        println(latitude)
+        println(longitude)
+        println(prefs.getFloat("radius", 1000f))
+        val geofence = Geofence.Builder()
+            .setCircularRegion(latitude, longitude, prefs.getFloat("radius", 1000f))
+            .setRequestId(photoUri.toString())
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .build()
+
+        return GeofencingRequest.Builder()
+            .addGeofence(geofence)
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_EXIT)
+            .build()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Shared.db = Room.databaseBuilder(
@@ -64,6 +102,8 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), MY_PERMISSIONS_REQUEST_LOCATION)
         }
+        geofencingClient = LocationServices.getGeofencingClient(this)
+        setGeofence(1, 50.0647, 19.9450)
     }
 
     override fun onResume() {
@@ -83,7 +123,6 @@ class MainActivity : AppCompatActivity() {
                 uris.add(imgUri)
             }
         }
-        println(uris)
         thread {
             var newList: MutableList<Traveler> = mutableListOf()
             uris.forEach { uri ->
@@ -99,7 +138,6 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-            println(newList)
             galleryAdapter.travelers = newList
         }
     }
@@ -153,15 +191,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun getPhotoBitmap(uri: Uri) : Bitmap {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+//            println(uri)
             val source = ImageDecoder.createSource(this.contentResolver, uri)
+//            println(source)
             ImageDecoder.decodeBitmap(source)
         } else {
             MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
         }
-    }
-
-    private fun setupGeofences() {
-
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -198,6 +234,7 @@ class MainActivity : AppCompatActivity() {
                         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
                         fusedLocationClient.lastLocation
                             .addOnSuccessListener { location ->
+//                                setGeofence(location.latitude.toInt(), location.latitude, location.longitude)
                                 val geocoder = Geocoder(this, Locale.getDefault())
                                 val addresses: List<Address> = geocoder.getFromLocation(
                                     location.latitude,
@@ -236,7 +273,6 @@ class MainActivity : AppCompatActivity() {
                                     Intent(this, DescriptionActivity::class.java).let {
                                         it.putExtra("photoUri", photoUri.toString())
                                     }
-
                                 startActivity(descriptionIntent)
                             }
                     }
@@ -262,10 +298,10 @@ class MainActivity : AppCompatActivity() {
                         .putInt("textColor", it!!.toInt())
                         .apply()
                 }
-                data?.getIntExtra("radius", 0).let {
-                    if (it != 0) {
+                data?.getFloatExtra("radius", 0f).let {
+                    if (it != 0f) {
                         prefs.edit()
-                            .putInt("radius", it!!)
+                            .putFloat("radius", it!!)
                             .apply()
                     }
                 }

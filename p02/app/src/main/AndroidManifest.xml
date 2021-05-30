@@ -28,6 +28,9 @@
             </intent-filter>
         </activity>
 
+        <receiver android:name=".Notifier"
+            android:exported="true" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="pl.edu.pja.p02.fileprovider"

@@ -65,6 +65,7 @@ class GalleryAdapter(private val mainActivity: MainActivity) : RecyclerView.Adap
                     mainActivity.runOnUiThread{
                         notifyDataSetChanged()
                     }
+//                    mainActivity.geofencingClient.removeGeofences()
                 }
             }
             .setNegativeButton("Nie") { dialog, _ ->

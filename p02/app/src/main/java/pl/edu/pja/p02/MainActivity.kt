@@ -1,7 +1,6 @@
 package pl.edu.pja.p02
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.ContentUris
@@ -37,8 +36,8 @@ import kotlin.concurrent.thread
 const val CAM_REQ = 1
 const val SETTINGS_REQ = 2
 
-const val MY_PERMISSIONS_REQUEST_CAMERA = 1
-const val MY_PERMISSIONS_REQUEST_LOCATION = 2
+const val MY_PERMISSIONS_REQUEST_CAMERA = 100
+const val MY_PERMISSIONS_REQUEST_LOCATION = 99
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -52,43 +51,6 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var geofencingClient: GeofencingClient
 
-    @SuppressLint("MissingPermission")
-    private fun setGeofence(requestCode: Int, latitude: Double, longitude: Double) {
-        val pi = PendingIntent.getBroadcast(
-            applicationContext,
-            1,
-            Intent(this, Notifier::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
-        geofencingClient.addGeofences(
-            genRequest(latitude, longitude),
-            pi
-        ).run {
-            addOnCompleteListener {
-                runOnUiThread {
-                    println("AAAAA")
-                }
-            }
-        }
-    }
-
-    private fun genRequest(latitude: Double, longitude: Double): GeofencingRequest {
-        println(latitude)
-        println(longitude)
-        println(prefs.getFloat("radius", 1000f))
-        val geofence = Geofence.Builder()
-            .setCircularRegion(latitude, longitude, prefs.getFloat("radius", 1000f))
-            .setRequestId(photoUri.toString())
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
-            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .build()
-
-        return GeofencingRequest.Builder()
-            .addGeofence(geofence)
-            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_EXIT)
-            .build()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Shared.db = Room.databaseBuilder(
@@ -99,11 +61,27 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         setupPhotosList()
 
+
+        //TODO: Nie pyta o lokalizację w tle, która by była wymagana
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), MY_PERMISSIONS_REQUEST_LOCATION)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+//                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                    ),
+                    MY_PERMISSIONS_REQUEST_LOCATION
+                )
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    MY_PERMISSIONS_REQUEST_LOCATION
+                )
+            }
         }
         geofencingClient = LocationServices.getGeofencingClient(this)
-        setGeofence(1, 50.0647, 19.9450)
     }
 
     override fun onResume() {
@@ -153,7 +131,9 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
         } else {
-            openCamera()
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                openCamera()
+            }
         }
     }
 
@@ -189,6 +169,8 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(cameraIntent, CAM_REQ)
     }
 
+
+    //TODO: Tu coś może psuć coś
     private fun getPhotoBitmap(uri: Uri) : Bitmap {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 //            println(uri)
@@ -198,6 +180,43 @@ class MainActivity : AppCompatActivity() {
         } else {
             MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
         }
+    }
+
+    private fun setGeofence(requestCode: Int, latitude: Double, longitude: Double) {
+        println(requestCode)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            geofencingClient.addGeofences(
+                generateRequest(latitude, longitude),
+                generatePendingIntent(requestCode)
+            )
+        }
+    }
+
+    private fun generateRequest(latitude: Double, longitude: Double): GeofencingRequest {
+        val geofence = Geofence.Builder()
+            .setCircularRegion(latitude, longitude, prefs.getFloat("radius", 1000f))
+            .setRequestId(photoUri.toString())
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+            .build()
+
+        return GeofencingRequest.Builder()
+            .addGeofence(geofence)
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_EXIT)
+            .build()
+    }
+
+    private fun generatePendingIntent(requestCode: Int): PendingIntent {
+        return PendingIntent.getBroadcast(
+            applicationContext,
+            requestCode,
+            Intent(this, Notifier::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -234,7 +253,6 @@ class MainActivity : AppCompatActivity() {
                         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
                         fusedLocationClient.lastLocation
                             .addOnSuccessListener { location ->
-//                                setGeofence(location.latitude.toInt(), location.latitude, location.longitude)
                                 val geocoder = Geocoder(this, Locale.getDefault())
                                 val addresses: List<Address> = geocoder.getFromLocation(
                                     location.latitude,
@@ -266,6 +284,17 @@ class MainActivity : AppCompatActivity() {
                                 thread {
                                     traveler?.let {
                                         Shared.db?.travelers?.save(it)
+                                    }
+                                }.let {
+                                    thread {
+                                        Shared.db?.travelers?.getByPhotoUri(photoUri.toString())
+                                            .let {
+                                                setGeofence(
+                                                    it?.id?.toInt()!!,
+                                                    location.latitude,
+                                                    location.longitude
+                                                )
+                                            }
                                     }
                                 }
                             }.let {
@@ -309,15 +338,15 @@ class MainActivity : AppCompatActivity() {
         } else super.onActivityResult(requestCode, resultCode, data)
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-            && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            openCamera()
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<out String>,
+//        grantResults: IntArray
+//    ) {
+//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+//            && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//            openCamera()
+//        }
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//    }
 }

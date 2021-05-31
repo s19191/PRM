@@ -14,18 +14,22 @@ class Notifier : BroadcastReceiver() {
             GeofencingEvent.fromIntent(it)
         }
         event?.errorCode
+        val cos = event?.triggeringGeofences
+        println(cos)
         val descriptionActivity = Intent(context, PhotoLookUpActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("photoUri", event?.triggeringGeofences?.first()?.requestId)
         }
-        val descriptionPendingIntent: PendingIntent = PendingIntent.getActivity(
+        val descriptionPendingIntent: PendingIntent = PendingIntent
+            .getActivity(
             context,
-            0,
+            1,
             descriptionActivity,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
         context?.let {
-            val notification = NotificationCompat.Builder(it, "pl.edu.pja.p02.Geofence")
+            val notification = NotificationCompat
+                .Builder(it, "pl.edu.pja.p02.Geofence")
                 .setSmallIcon(R.mipmap.ic_launcher_foreground)
                 .setContentTitle("Przeżyj to jeszcze raz!")
                 .addAction(

@@ -65,29 +65,21 @@ class MainActivity : AppCompatActivity() {
 
 
         //TODO: Nie pyta o lokalizację w tle, która by była wymagana
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-//                        Manifest.permission.CAMERA,
-//                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    ),
-                    MY_PERMISSIONS_REQUEST_LOCATION
-                )
-            } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    MY_PERMISSIONS_REQUEST_LOCATION
-                )
-            }
-        }
+        checkLocationPermissions()
 
         geofencingClient = LocationServices.getGeofencingClient(this)
 
         registerChannel()
+    }
+
+    private fun checkLocationPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                MY_PERMISSIONS_REQUEST_LOCATION
+            )
+        }
     }
 
     override fun onResume() {
@@ -300,15 +292,12 @@ class MainActivity : AppCompatActivity() {
                                     longitude = location.longitude
                                 )
                                 thread {
-                                    traveler?.let {
+                                    traveler?.let { it ->
                                         Shared.db?.travelers?.save(it)
-                                    }
-                                }.let {
-                                    thread {
                                         Shared.db?.travelers?.getByPhotoUri(photoUri.toString())
                                             .let {
                                                 setGeofence(
-                                                    1,
+                                                    it?.id?.toInt()!!,
                                                     location.latitude,
                                                     location.longitude
                                                 )

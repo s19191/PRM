@@ -308,7 +308,7 @@ class MainActivity : AppCompatActivity() {
                                         Shared.db?.travelers?.getByPhotoUri(photoUri.toString())
                                             .let {
                                                 setGeofence(
-                                                    it?.id?.toInt()!!,
+                                                    1,
                                                     location.latitude,
                                                     location.longitude
                                                 )

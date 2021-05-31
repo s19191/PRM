@@ -18,17 +18,21 @@ class Notifier : BroadcastReceiver() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("photoUri", event?.triggeringGeofences?.first()?.requestId)
         }
-        val snoozePendingIntent: PendingIntent =
-            PendingIntent.getActivity(
-                context, 0, descriptionActivity, PendingIntent.FLAG_UPDATE_CURRENT
-            )
+        val descriptionPendingIntent: PendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            descriptionActivity,
+            PendingIntent.FLAG_UPDATE_CURRENT
+        )
         context?.let {
             val notification = NotificationCompat.Builder(it, "pl.edu.pja.p02.Geofence")
                 .setSmallIcon(R.mipmap.ic_launcher_foreground)
                 .setContentTitle("Przeżyj to jeszcze raz!")
-                .addAction(R.mipmap.ic_launcher_foreground, "Podejrzyj swoje zdjęcie wraz z notatką",
-                    snoozePendingIntent)
-                .setFullScreenIntent(snoozePendingIntent, true)
+                .addAction(
+                    R.mipmap.ic_launcher_foreground,
+                    "Podejrzyj swoje zdjęcie wraz z notatką",
+                    descriptionPendingIntent
+                )
                 .build()
             it.getSystemService(NotificationManager::class.java)
                 ?.notify(1, notification)

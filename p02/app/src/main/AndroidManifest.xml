@@ -15,9 +15,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.P02">
+        <activity android:name=".PhotoLookUpActivity"></activity>
         <activity
             android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"></activity>
+            android:label="@string/title_activity_settings" />
         <activity android:name=".PhotoShowActivity" />
         <activity android:name=".DescriptionActivity" />
         <activity android:name=".MainActivity">
@@ -28,7 +29,8 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".Notifier"
+        <receiver
+            android:name=".Notifier"
             android:exported="true" />
 
         <provider

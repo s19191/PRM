@@ -189,7 +189,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setGeofence(requestCode: Int, latitude: Double, longitude: Double) {
-        println(requestCode)
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION

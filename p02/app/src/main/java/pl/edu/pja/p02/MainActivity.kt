@@ -1,14 +1,12 @@
 package pl.edu.pja.p02
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.ContentUris
-import android.content.ContentValues
-import android.content.Context
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -52,11 +50,15 @@ class MainActivity : AppCompatActivity() {
     //TODO: brodcastreciver na akcje bootcompleted
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult?) {
+            locationResult ?: return
+        }
+    }
 
     private val prefs by lazy { getSharedPreferences("prefs", Context.MODE_PRIVATE) }
 
-    private lateinit var geofencingClient: GeofencingClient
+    lateinit var geofencingClient: GeofencingClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,14 +77,15 @@ class MainActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         registerChannel()
+
+        startLocationUpdates()
     }
 
     override fun onResume() {
         super.onResume()
-        startLocationUpdates()
         val uris = getUris()
         thread {
-            var newList: MutableList<Traveler> = mutableListOf()
+            val newList: MutableList<Traveler> = mutableListOf()
             uris.forEach { uri ->
                 val photoBitmap = getPhotoBitmap(uri)
                 Shared.db?.travelers?.getByPhotoUri(uri.toString())?.let { tDto ->
@@ -128,13 +131,12 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            locationCallback = object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult?) {
-                    locationResult ?: return
-                }
+            val locationRequest = LocationRequest.create().apply {
+                interval = 5000
+                priority = LocationRequest.PRIORITY_HIGH_ACCURACY
             }
             fusedLocationClient.requestLocationUpdates(
-                LocationRequest.create(),
+                locationRequest,
                 locationCallback,
                 Looper.getMainLooper())
         }
@@ -210,13 +212,17 @@ class MainActivity : AppCompatActivity() {
             uri,
             contentValues
         )
-        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).let {
-            it.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-        }
-        startActivityForResult(cameraIntent, CAM_REQ)
+        startActivityForResult(
+            Intent(
+            MediaStore.ACTION_IMAGE_CAPTURE
+        ).putExtra(
+            MediaStore.EXTRA_OUTPUT,
+            photoUri
+        ),
+            CAM_REQ
+        )
     }
 
-    //TODO: Tu coś może psuć coś
     private fun getPhotoBitmap(uri: Uri) : Bitmap {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val source = ImageDecoder.createSource(this.contentResolver, uri)
@@ -239,7 +245,7 @@ class MainActivity : AppCompatActivity() {
             longitude = longitude
         )
         thread {
-            traveler?.let { it ->
+            traveler.let { it ->
                 Shared.db?.travelers?.save(it)
                 if (latitude != null && longitude != null) {
                     Shared.db?.travelers?.getByPhotoUri(photoUri.toString())
@@ -340,7 +346,6 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 canvas.drawText(date, 10f, canvas.height.toFloat() - 10f, paint)
-                    //TODO: fusedLocationClient.requestLocationUpdates() mainlooper
                     if (ActivityCompat.checkSelfPermission(
                             this,
                             Manifest.permission.ACCESS_FINE_LOCATION
@@ -419,25 +424,4 @@ class MainActivity : AppCompatActivity() {
             }
         } else super.onActivityResult(requestCode, resultCode, data)
     }
-
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        if (requestCode == MY_PERMISSIONS_REQUEST_CAMERA) {
-//            if (ContextCompat.checkSelfPermission(
-//                    this,
-//                    Manifest.permission.CAMERA
-//                ) == PackageManager.PERMISSION_GRANTED
-//                && ContextCompat.checkSelfPermission(
-//                    this,
-//                    Manifest.permission.ACCESS_FINE_LOCATION
-//                ) == PackageManager.PERMISSION_GRANTED
-//            ) {
-//                openCamera()
-//            }
-//        }
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//    }
 }

@@ -75,8 +75,8 @@ class MainActivity : AppCompatActivity() {
 
         setupPhotosList()
 
-        geofencingClient = LocationServices.getGeofencingClient(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        geofencingClient = LocationServices.getGeofencingClient(this)
 
         registerChannel()
 

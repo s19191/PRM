@@ -101,6 +101,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+            newList.reverse()
             galleryAdapter.travelers = newList
         }
     }

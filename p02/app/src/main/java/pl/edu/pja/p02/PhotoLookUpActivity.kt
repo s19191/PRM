@@ -19,14 +19,12 @@ class PhotoLookUpActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val bundle :Bundle ?= intent.extras
-        if (bundle != null) {
-            val photoUri = bundle.getString("photoUri")?.let { photoUri ->
-                thread {
-                    Shared.db?.travelers?.getByPhotoUri(photoUri)?.let { it ->
-                        this.runOnUiThread {
-                            binding.descriptionPhotoLookUp.text = it.description
-                            binding.photoLookUp.setImageBitmap(getPhotoBitmap(photoUri.toUri()))
-                        }
+        bundle?.getString("photoUri")?.let { photoUri ->
+            thread {
+                Shared.db?.travelers?.getByPhotoUri(photoUri)?.let { it ->
+                    this.runOnUiThread {
+                        binding.descriptionPhotoLookUp.text = it.description
+                        binding.photoLookUp.setImageBitmap(getPhotoBitmap(photoUri.toUri()))
                     }
                 }
             }

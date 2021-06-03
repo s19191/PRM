@@ -6,7 +6,7 @@
     <string name="settings_label">Ustawienia</string>
     <string name="textSize">Rozmiar napisu:</string>
     <string name="textColor">Kolor napisu:</string>
-    <string name="radius">Promień okręgu działania powiadomień:</string>
+    <string name="radius">Promień okręgu działania powiadomień w m:</string>
     <string name="note">Notatka:</string>
     <string-array name="textSize_array">
         <item>10</item>

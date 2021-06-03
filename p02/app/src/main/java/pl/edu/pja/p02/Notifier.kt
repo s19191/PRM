@@ -13,9 +13,10 @@ class Notifier : BroadcastReceiver() {
         val event = intent?.let {
             GeofencingEvent.fromIntent(it)
         }
-        event?.errorCode
-        val cos = event?.triggeringGeofences
-        println(cos)
+        var id = intent?.extras?.getInt("requestCode")
+        if (id == null) {
+            id = 1
+        }
         val descriptionActivity = Intent(context, PhotoLookUpActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("photoUri", event?.triggeringGeofences?.first()?.requestId)
@@ -39,7 +40,7 @@ class Notifier : BroadcastReceiver() {
                 )
                 .build()
             it.getSystemService(NotificationManager::class.java)
-                ?.notify(1, notification)
+                ?.notify(id, notification)
         }
     }
 }

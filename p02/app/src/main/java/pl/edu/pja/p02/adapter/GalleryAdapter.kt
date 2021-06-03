@@ -1,15 +1,12 @@
 package pl.edu.pja.p02.adapter
 
 import android.app.AlertDialog
-import android.content.Intent
-import android.os.Build
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.HandlerCompat
 import androidx.recyclerview.widget.RecyclerView
 import pl.edu.pja.p02.MainActivity
-import pl.edu.pja.p02.PhotoShowActivity
 import pl.edu.pja.p02.Shared
 import pl.edu.pja.p02.databinding.ItemPhotoBinding
 import pl.edu.pja.p02.model.Traveler
@@ -31,16 +28,17 @@ class GalleryAdapter(private val mainActivity: MainActivity) : RecyclerView.Adap
             parent,
             false
         )
-        return PhotoItem(binding)
-            .also { holder ->
+        return PhotoItem(binding).also { holder ->
+            binding.root.setOnClickListener {
+                editItem(
+                    travelers[holder.layoutPosition].id,
+                    travelers[holder.layoutPosition].photoUri.toString()
+                )
+            }
+
             binding.root.setOnLongClickListener {
                 removeItem(holder.layoutPosition, parent)
                 return@setOnLongClickListener true
-            }
-            binding.root.setOnClickListener {
-                parent.context.startActivity(Intent(parent.context, PhotoShowActivity::class.java)
-                    .putExtra("itemId", travelers[holder.layoutPosition].id)
-                )
             }
         }
     }
@@ -51,6 +49,10 @@ class GalleryAdapter(private val mainActivity: MainActivity) : RecyclerView.Adap
 
     override fun getItemCount(): Int = travelers.size
 
+    private fun editItem(itemId: Long, photoUri: String) {
+        mainActivity.openEditActivity(itemId, photoUri)
+    }
+
     private fun removeItem(position: Int, parent: ViewGroup) {
         val builder = AlertDialog.Builder(parent.context)
         builder.setMessage("Czy na pewno chcesz usunać?")
@@ -58,14 +60,12 @@ class GalleryAdapter(private val mainActivity: MainActivity) : RecyclerView.Adap
             .setPositiveButton("Tak") { _, _ ->
                 thread {
                     Shared.db?.travelers?.delete(travelers[position].id)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        parent.context.contentResolver.delete(travelers[position].photoUri, mainActivity.intent.extras)
-                    }
+                    mainActivity.deletePhoto(travelers[position].photoUri)
+                    mainActivity.geofencingClient.removeGeofences(mutableListOf(travelers[position].photoUri.toString()))
                     travelers.removeAt(position)
                     mainActivity.runOnUiThread{
                         notifyDataSetChanged()
                     }
-//                    mainActivity.geofencingClient.removeGeofences()
                 }
             }
             .setNegativeButton("Nie") { dialog, _ ->

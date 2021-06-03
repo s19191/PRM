@@ -19,6 +19,7 @@ import android.location.Geocoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.provider.MediaStore
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -31,6 +32,7 @@ import pl.edu.pja.p02.adapter.GalleryAdapter
 import pl.edu.pja.p02.databinding.ActivityMainBinding
 import pl.edu.pja.p02.model.Traveler
 import pl.edu.pja.p02.model.TravelerDto
+import java.io.File
 import java.text.DateFormat
 import java.util.*
 import kotlin.concurrent.thread
@@ -47,11 +49,14 @@ class MainActivity : AppCompatActivity() {
 
     private var photoUri = Uri.EMPTY
 
+    //TODO: brodcastreciver na akcje bootcompleted
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
 
     private val prefs by lazy { getSharedPreferences("prefs", Context.MODE_PRIVATE) }
 
-    lateinit var geofencingClient: GeofencingClient
+    private lateinit var geofencingClient: GeofencingClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,44 +66,21 @@ class MainActivity : AppCompatActivity() {
             "travelerdb"
         ).build()
         setContentView(binding.root)
-        setupPhotosList()
 
-
-        //TODO: Nie pyta o lokalizację w tle, która by była wymagana
         checkLocationPermissions()
 
+        setupPhotosList()
+
         geofencingClient = LocationServices.getGeofencingClient(this)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         registerChannel()
     }
 
-    private fun checkLocationPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                MY_PERMISSIONS_REQUEST_LOCATION
-            )
-        }
-    }
-
     override fun onResume() {
         super.onResume()
-        var uris: MutableList<Uri> = mutableListOf()
-        val filers = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-        contentResolver.query(
-            filers,
-            arrayOf(MediaStore.Images.Media._ID),
-            null,
-            null,
-            null
-        )?.use {
-            while (it.moveToNext()) {
-                val id = it.getInt(it.getColumnIndex(MediaStore.Images.Media._ID))
-                val imgUri = ContentUris.withAppendedId(filers, id.toLong())
-                uris.add(imgUri)
-            }
-        }
+        startLocationUpdates()
+        val uris = getUris()
         thread {
             var newList: MutableList<Traveler> = mutableListOf()
             uris.forEach { uri ->
@@ -118,6 +100,46 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun getUris() : MutableList<Uri> {
+        val uris: MutableList<Uri> = mutableListOf()
+        val filers = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+        contentResolver.query(
+            filers,
+            arrayOf(MediaStore.Images.Media._ID),
+            null,
+            null,
+            null
+        )?.use {
+            while (it.moveToNext()) {
+                val id = it.getInt(it.getColumnIndex(MediaStore.Images.Media._ID))
+                val imgUri = ContentUris.withAppendedId(filers, id.toLong())
+                uris.add(imgUri)
+            }
+        }
+        return uris
+    }
+
+    private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            locationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult?) {
+                    locationResult ?: return
+                }
+            }
+            fusedLocationClient.requestLocationUpdates(
+                LocationRequest.create(),
+                locationCallback,
+                Looper.getMainLooper())
+        }
+    }
+
     private fun setupPhotosList() {
         binding.photosList.apply {
             adapter = galleryAdapter
@@ -126,25 +148,52 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onCamera(view: View) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), MY_PERMISSIONS_REQUEST_CAMERA)
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                openCamera()
-            }
+        if (checkCameraPermissions()) {
+            openCamera()
         }
     }
 
     fun onSettings(view: View) {
         val color = prefs.getInt("textColor", 0)
         val size = prefs.getInt("textSize", 4)
-        val radius = prefs.getInt("radius", 1000)
+        val radius = prefs.getFloat("radius", 1000f)
         val settingsIntent = Intent(this, SettingsActivity::class.java).apply {
             putExtra("textColor", color)
             putExtra("textSize", size)
             putExtra("radius", radius)
         }
         startActivityForResult(settingsIntent, SETTINGS_REQ)
+    }
+
+    fun openEditActivity(itemId: Long, photoUri: String) {
+        val photoShowIntent = Intent(this, PhotoShowActivity::class.java).apply {
+            putExtra("itemId", itemId)
+            putExtra("photoUri", photoUri)
+        }
+        startActivity(photoShowIntent)
+    }
+
+    private fun checkLocationPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                MY_PERMISSIONS_REQUEST_LOCATION
+            )
+        }
+    }
+
+    private fun checkCameraPermissions() : Boolean {
+        return if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                MY_PERMISSIONS_REQUEST_CAMERA
+            )
+            false
+        } else {
+            true
+        }
     }
 
     private fun openCamera() {
@@ -167,16 +216,57 @@ class MainActivity : AppCompatActivity() {
         startActivityForResult(cameraIntent, CAM_REQ)
     }
 
-
     //TODO: Tu coś może psuć coś
     private fun getPhotoBitmap(uri: Uri) : Bitmap {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-//            println(uri)
             val source = ImageDecoder.createSource(this.contentResolver, uri)
-//            println(source)
             ImageDecoder.decodeBitmap(source)
         } else {
             MediaStore.Images.Media.getBitmap(this.contentResolver, uri)
+        }
+    }
+
+    private fun savePhoto(photoUri: Uri, photoBitmap: Bitmap, latitude: Double?, longitude: Double?) {
+        photoUri.let { it ->
+            contentResolver.openOutputStream(it)?.use {
+                photoBitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+            }
+        }
+        val traveler = TravelerDto(
+            description = null,
+            photoUri = photoUri.toString(),
+            latitude = latitude,
+            longitude = longitude
+        )
+        thread {
+            traveler?.let { it ->
+                Shared.db?.travelers?.save(it)
+                if (latitude != null && longitude != null) {
+                    Shared.db?.travelers?.getByPhotoUri(photoUri.toString())
+                        .let {
+                            setGeofence(
+                                it?.id?.toInt()!!,
+                                latitude,
+                                longitude
+                            )
+                        }
+                }
+            }
+        }
+    }
+
+    fun deletePhoto(photoUri: Uri) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            contentResolver.delete(photoUri, this.intent.extras)
+        } else {
+            val file = File(photoUri.path)
+            file.delete()
+            if (file.exists()) {
+                file.canonicalFile.delete()
+                if (file.exists()) {
+                    applicationContext.deleteFile(file.name)
+                }
+            }
         }
     }
 
@@ -211,7 +301,7 @@ class MainActivity : AppCompatActivity() {
         return PendingIntent.getBroadcast(
             applicationContext,
             requestCode,
-            Intent(this, Notifier::class.java),
+            Intent(this, Notifier::class.java).putExtra("requestCode", requestCode),
             PendingIntent.FLAG_UPDATE_CURRENT
         )
     }
@@ -250,17 +340,27 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 canvas.drawText(date, 10f, canvas.height.toFloat() - 10f, paint)
-
-                if (ActivityCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    this.runOnUiThread {
-                        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+                    //TODO: fusedLocationClient.requestLocationUpdates() mainlooper
+                    if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_FINE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        savePhoto(photoUri, resultBitmap, null, null)
+                        startActivity(
+                            Intent(
+                                this,
+                                DescriptionActivity::class.java
+                            )
+                                .putExtra(
+                                    "photoUri",
+                                    photoUri.toString()
+                                )
+                        )
+                    } else {
                         fusedLocationClient.lastLocation
                             .addOnSuccessListener { location ->
                                 val geocoder = Geocoder(this, Locale.getDefault())
@@ -278,47 +378,22 @@ class MainActivity : AppCompatActivity() {
                                     canvas.height.toFloat() - textSizeTmp - 10f,
                                     paint
                                 )
-
-                                photoUri?.let { it ->
-                                    contentResolver.openOutputStream(it)?.use {
-                                        resultBitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
-                                    }
-                                }
-
-                                val traveler = TravelerDto(
-                                    description = null,
-                                    photoUri = photoUri.toString(),
-                                    latitude = location.latitude,
-                                    longitude = location.longitude
-                                )
-                                thread {
-                                    traveler?.let { it ->
-                                        Shared.db?.travelers?.save(it)
-                                        Shared.db?.travelers?.getByPhotoUri(photoUri.toString())
-                                            .let {
-                                                setGeofence(
-                                                    it?.id?.toInt()!!,
-                                                    location.latitude,
-                                                    location.longitude
-                                                )
-                                            }
-                                    }
-                                }
+                                savePhoto(photoUri, resultBitmap, location.latitude, location.longitude)
                             }.let {
-                                val descriptionIntent =
-                                    Intent(this, DescriptionActivity::class.java).let {
-                                        it.putExtra("photoUri", photoUri.toString())
-                                    }
-                                startActivity(descriptionIntent)
+                                startActivity(
+                                    Intent(
+                                        this,
+                                        DescriptionActivity::class.java
+                                    )
+                                        .putExtra(
+                                            "photoUri",
+                                            photoUri.toString()
+                                        )
+                                )
                             }
                     }
-                }
             } else {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    contentResolver.delete(photoUri, data?.extras)
-                } else {
-                    //TODO: Dodanie alternatywnego usuwania dla starszego antka
-                }
+                deletePhoto(photoUri)
             }
         } else super.onActivityResult(requestCode, resultCode, data)
 

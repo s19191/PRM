@@ -33,11 +33,10 @@ class DescriptionActivity : AppCompatActivity() {
     }
 
     fun onSave(view: View) {
-        var description = binding.description.text.toString()
+        val description = binding.description.text.toString()
         if (editItemId == 0L) {
-            var photoUri = getPhotoName()
             thread {
-                photoUri?.let {
+                getPhotoName()?.let {
                     Shared.db?.travelers?.update(it, description)
                 }
             }
@@ -54,12 +53,6 @@ class DescriptionActivity : AppCompatActivity() {
     }
 
     private fun getPhotoName() : String? {
-        val bundle :Bundle ?= intent?.extras
-        return if (bundle != null) {
-            val photoUri = bundle.getString("photoUri")
-            photoUri
-        } else {
-            null
-        }
+        return intent?.extras?.getString("photoUri")
     }
 }

@@ -1,6 +1,5 @@
 package pl.edu.pja.p02.model
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -8,9 +7,8 @@ import androidx.room.PrimaryKey
 data class TravelerDto(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    @ColumnInfo()
     val description: String?,
     val photoUri: String,
-    val latitude: Double,
-    val longitude: Double
+    val latitude: Double?,
+    val longitude: Double?
 )

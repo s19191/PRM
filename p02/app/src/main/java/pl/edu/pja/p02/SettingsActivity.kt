@@ -38,10 +38,14 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         val bundle :Bundle ?= intent.extras
-        if (bundle != null) {
-            binding.textSizeSpinner.setSelection(bundle.getInt("textSize"))
-            binding.textColorSpinner.setSelection(bundle.getInt("textColor"))
-            binding.radius.setText(bundle.getInt("radius").toString())
+        bundle?.getInt("textSize")?.let {
+            binding.textSizeSpinner.setSelection(it)
+        }
+        bundle?.getInt("textColor")?.let {
+            binding.textColorSpinner.setSelection(it)
+        }
+        bundle?.getFloat("radius")?.toInt().toString().let {
+            binding.radius.setText(it)
         }
     }
 

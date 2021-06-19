@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "959951993014",
+    "project_id": "prmp03a",
+    "storage_bucket": "prmp03a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:959951993014:android:e657b34dbb9e9c50ec4e17",
+        "android_client_info": {
+          "package_name": "pl.edu.pja.p03a"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "959951993014-aqc0ve3mh9m85uosp1d14bbl7j1t9c58.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBYW0lvi9wFeHjBUduNHzF3-kbutKcWon4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "959951993014-aqc0ve3mh9m85uosp1d14bbl7j1t9c58.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

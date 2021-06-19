@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">NewsFeed</string>
+    <string name="logIn_screen">Ekran logowania</string>
+    <string name="logIn_button">Zaloguj się</string>
+    <string name="register_button">Zarejestruj się</string>
+    <string name="e_mail_label">E-mail:</string>
+    <string name="password_label">Hasło:</string>
+    <string name="singOut_label">Wyloguj się</string>
+    <string name="register_activity">Zajejestruj się</string>
+    <string name="logInViaGoogle_button">Zaloguj się przez google</string>
+    <string name="title_activity_maps">Map</string>
+</resources>

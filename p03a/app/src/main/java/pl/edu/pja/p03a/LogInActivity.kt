@@ -121,7 +121,6 @@ class LogInActivity : AppCompatActivity() {
                 val account = task.getResult(ApiException::class.java)!!
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
-                println("AAA" + e.message + e.localizedMessage)
                 Toast.makeText(this, "Nieprawidłowe dane logowania!", Toast.LENGTH_SHORT).show()
                 // Google Sign In failed, update UI appropriately
             }

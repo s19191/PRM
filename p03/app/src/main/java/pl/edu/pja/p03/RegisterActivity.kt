@@ -43,6 +43,10 @@ class RegisterActivity : AppCompatActivity() {
                     password
                 ).addOnSuccessListener {
                     Toast.makeText(this, "Zalogowano ${it.user?.uid} ${it.user?.email}", Toast.LENGTH_SHORT).show()
+                    setResult(RESULT_OK)
+                    finish()
+                }.addOnFailureListener{
+                    Toast.makeText(this, "Nie udało się!", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
@@ -56,7 +60,5 @@ class RegisterActivity : AppCompatActivity() {
 //                    println()
 //                }
         }
-        setResult(RESULT_OK)
-        finish()
     }
 }

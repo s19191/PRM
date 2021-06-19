@@ -8,4 +8,5 @@
     <string name="singOut_label">Wyloguj się</string>
     <string name="register_activity">Zajejestruj się</string>
     <string name="logInViaGoogle_button">Zaloguj się przez google</string>
+    <string name="title_activity_maps">Map</string>
 </resources>

@@ -14,7 +14,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import pl.edu.pja.p03.databinding.ActivityLogInBinding
 
-
 const val REGISTER_REQ = 1
 const val REGISTER_VIA_GOOGLE_REQ = 2
 

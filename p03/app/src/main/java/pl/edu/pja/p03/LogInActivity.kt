@@ -1,37 +1,46 @@
 package pl.edu.pja.p03
 
-import android.R
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import pl.edu.pja.p03.databinding.ActivityLogInBinding
 
 
 const val REGISTER_REQ = 1
+const val REGISTER_VIA_GOOGLE_REQ = 2
 
 class LogInActivity : AppCompatActivity() {
     private val binding by lazy { ActivityLogInBinding.inflate(layoutInflater) }
     private lateinit var auth: FirebaseAuth
+    private lateinit var mGoogleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .build()
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+
         auth = FirebaseAuth.getInstance()
         if (auth.currentUser != null) {
             finish()
         }
-    }
 
-    override fun onResume() {
-        super.onResume()
-        if (auth.currentUser != null) {
-            finish()
+        binding.logInViaGoogleButton.setOnClickListener {
+            val signInIntent = mGoogleSignInClient.signInIntent
+            startActivityForResult(signInIntent, REGISTER_VIA_GOOGLE_REQ)
         }
     }
 
@@ -53,11 +62,14 @@ class LogInActivity : AppCompatActivity() {
                     password
                 ).addOnSuccessListener {
                     Toast.makeText(this, "Zalogowano ${it.user?.uid} ${it.user?.email}", Toast.LENGTH_SHORT).show()
+                    finish()
+                }.addOnFailureListener {
+                    Toast.makeText(this, "Nieprawidłowe dane logowania!", Toast.LENGTH_SHORT).show()
                 }
             }
         } else {
-//            auth.signOut()
             Toast.makeText(this, "Zalogowano ${auth.currentUser?.uid} ${auth.currentUser?.email}", Toast.LENGTH_SHORT).show()
+            //Rzeczy na potem
 //            startActivity(Intent(this, ArticleListActivity::class.java))
 //            FirebaseDatabase.getInstance()
 //                .getReference("users")
@@ -67,18 +79,34 @@ class LogInActivity : AppCompatActivity() {
 //                    println()
 //                }
         }
-        finish()
     }
 
     fun register(view: View) {
         startActivityForResult(Intent(this, RegisterActivity::class.java), REGISTER_REQ)
     }
 
+    // Nie wiadomo czemu nie działa
     fun logInViaGoogle(view: View) {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
+        val signInIntent = mGoogleSignInClient.signInIntent
+        startActivityForResult(signInIntent, REGISTER_VIA_GOOGLE_REQ)
+    }
+
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Zalogowano ${it.user?.uid} ${it.user?.email}", Toast.LENGTH_SHORT).show()
+                finish()
+            }.addOnFailureListener {
+                Toast.makeText(this, "Nieprawidłowe dane logowania!", Toast.LENGTH_SHORT).show()
+            }
+//            .addOnCompleteListener(this) { task ->
+//                if (task.isSuccessful) {
+//                    // Sign in success, update UI with the signed-in user's information
+//                    val user: FirebaseUser? = auth.currentUser
+//                } else {
+//                }
+//            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -87,5 +115,17 @@ class LogInActivity : AppCompatActivity() {
                 finish()
             }
         } else super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REGISTER_VIA_GOOGLE_REQ) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                val account = task.getResult(ApiException::class.java)!!
+                firebaseAuthWithGoogle(account.idToken!!)
+            } catch (e: ApiException) {
+                println("AAA" + e.message + e.localizedMessage)
+                Toast.makeText(this, "Nieprawidłowe dane logowania!", Toast.LENGTH_SHORT).show()
+                // Google Sign In failed, update UI appropriately
+            }
+        }
     }
 }

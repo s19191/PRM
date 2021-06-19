@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1010377347863",
+    "firebase_url": "https://prmp03-803de-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "prmp03-803de",
+    "storage_bucket": "prmp03-803de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010377347863:android:b81a07f7aeb330f98b9d52",
+        "android_client_info": {
+          "package_name": "pl.edu.pja.p03"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1010377347863-hbroulf963a4tksme2trmigcib4i5aif.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuApiBSgedWIaegC21Tv3fFT34avCS0gU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1010377347863-hbroulf963a4tksme2trmigcib4i5aif.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

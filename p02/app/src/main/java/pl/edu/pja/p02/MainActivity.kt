@@ -1,4 +1,4 @@
-ppackage pl.edu.pja.p02
+package pl.edu.pja.p02
 
 import android.Manifest
 import android.app.Activity

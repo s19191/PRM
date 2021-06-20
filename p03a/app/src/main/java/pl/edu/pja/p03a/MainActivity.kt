@@ -1,19 +1,24 @@
 package pl.edu.pja.p03a
 
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.service.autofill.FieldClassification
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
-import pl.edu.pja.p03a.adapter.NewsAdapter
-import pl.edu.pja.p03a.api.ApiClient
-import pl.edu.pja.p03a.databinding.ActivityMainBinding
-import pl.edu.pja.p03a.shared.Shared
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import pl.edu.pja.p03a.adapter.NewsAdapter
+import pl.edu.pja.p03a.api.ApiClient
+import pl.edu.pja.p03a.databinding.ActivityMainBinding
+import pl.edu.pja.p03a.model.News
+import pl.edu.pja.p03a.shared.Shared
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -52,10 +57,23 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 val response = ApiClient.apiService.getItems()
-
                 if (response.isSuccessful && response.body() != null) {
                     val content = response.body()
-                    //do something
+                    content?.channel?.item?.forEach {
+                        println(it.enclosure?.url)
+                        Shared.newsList.add(
+                            News
+                                (
+                                it.title,
+                                it.description,
+                                it.link,
+                                Drawable.createFromPath(it.enclosure?.url)
+                            )
+                        )
+                    }
+                    runOnUiThread {
+                        newsAdapter.notifyDataSetChanged()
+                    }
                 } else {
                     Toast.makeText(
                         this@MainActivity,

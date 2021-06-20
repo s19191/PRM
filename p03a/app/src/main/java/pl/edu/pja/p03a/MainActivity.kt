@@ -16,6 +16,7 @@ import pl.edu.pja.p03a.api.ApiClient
 import pl.edu.pja.p03a.databinding.ActivityMainBinding
 import pl.edu.pja.p03a.model.News
 import pl.edu.pja.p03a.shared.Shared
+import java.util.regex.Pattern
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -45,27 +46,37 @@ class MainActivity : AppCompatActivity() {
         newsAdapter.newses = Shared.newsList
     }
 
-    override fun onResume() {
-        super.onResume()
-        newsAdapter.newses = Shared.newsList
-    }
-
     private fun executeCall() {
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 val response = ApiClient.apiService.getItems()
                 if (response.isSuccessful && response.body() != null) {
                     val content = response.body()
+                    val p = Pattern.compile("<img src=.+>(.+)")
                     content?.channel?.item?.forEach {
-                        Shared.newsList.add(
-                            News
-                                (
-                                it.title,
-                                it.description,
-                                it.link,
-                                Uri.parse(it.enclosure?.url)
+                        val m = p.matcher(it.description)
+                        if (m.matches()) {
+                            println(m.group(1))
+                            Shared.newsList.add(
+                                News
+                                    (
+                                    it.title,
+                                    m.group(1),
+                                    it.link,
+                                    Uri.parse(it.enclosure?.url)
+                                )
                             )
-                        )
+                        } else {
+                            Shared.newsList.add(
+                                News
+                                    (
+                                    it.title,
+                                    m.group(1),
+                                    it.link,
+                                    Uri.parse(it.enclosure?.url)
+                                )
+                            )
+                        }
                     }
                     runOnUiThread {
                         newsAdapter.notifyDataSetChanged()

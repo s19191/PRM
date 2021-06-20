@@ -1,5 +1,6 @@
 package pl.edu.pja.p03a.adapter
 
+import android.graphics.Color
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -34,6 +35,7 @@ class NewsAdapter : RecyclerView.Adapter<NewsItem>() {
                         parent.context,
                         Uri.parse(Shared.newsList[holder.layoutPosition].link)
                     )
+                    holder.itemView.setBackgroundColor(Color.parseColor("#CCCCCC"))
                 }
                 binding.root.setOnLongClickListener {
                     FirebaseDatabase.getInstance()

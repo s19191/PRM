@@ -3,12 +3,17 @@ package pl.edu.pja.p03a
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
 import pl.edu.pja.p03a.adapter.NewsAdapter
+import pl.edu.pja.p03a.api.ApiClient
 import pl.edu.pja.p03a.databinding.ActivityMainBinding
 import pl.edu.pja.p03a.shared.Shared
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -25,6 +30,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, LogInActivity::class.java))
         }
 
+        executeCall()
+
         setupNewsList()
     }
 
@@ -40,6 +47,34 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         newsAdapter.newses = Shared.newsList
     }
+
+    private fun executeCall() {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val response = ApiClient.apiService.getItems()
+
+                if (response.isSuccessful && response.body() != null) {
+                    val content = response.body()
+                    //do something
+                } else {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Error Occurred: ${response.message()}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Error Occurred: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private
 
     fun signOut(view: View) {
         auth.signOut()

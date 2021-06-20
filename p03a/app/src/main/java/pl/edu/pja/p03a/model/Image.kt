@@ -9,7 +9,6 @@ data class Image(
     @field:Element(name = "url", required = false) var url: String?,
     @field:Element(name = "link", required = false) var link: String?,
 )
-
 {
     constructor() : this("", "", "")
 }

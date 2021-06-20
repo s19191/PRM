@@ -1,6 +1,5 @@
 package pl.edu.pja.p03a.model
 
-import org.simpleframework.xml.Attribute
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.Root
 

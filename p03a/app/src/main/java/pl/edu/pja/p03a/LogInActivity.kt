@@ -68,15 +68,6 @@ class LogInActivity : AppCompatActivity() {
             }
         } else {
             Toast.makeText(this, "Zalogowano ${auth.currentUser?.uid} ${auth.currentUser?.email}", Toast.LENGTH_SHORT).show()
-            //Rzeczy na potem
-//            startActivity(Intent(this, ArticleListActivity::class.java))
-//            FirebaseDatabase.getInstance()
-//                .getReference("users")
-//                .child("${auth.currentUser?.uid}")
-//                .setValue("${auth.currentUser?.email}")
-//                .addOnCompleteListener {
-//                    println()
-//                }
         }
     }
 
@@ -90,6 +81,7 @@ class LogInActivity : AppCompatActivity() {
         startActivityForResult(signInIntent, REGISTER_VIA_GOOGLE_REQ)
     }
 
+    //Brakuje klucza SSH
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
@@ -117,12 +109,10 @@ class LogInActivity : AppCompatActivity() {
         if (requestCode == REGISTER_VIA_GOOGLE_REQ) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
-                // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)!!
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
                 Toast.makeText(this, "Nieprawidłowe dane logowania!", Toast.LENGTH_SHORT).show()
-                // Google Sign In failed, update UI appropriately
             }
         }
     }

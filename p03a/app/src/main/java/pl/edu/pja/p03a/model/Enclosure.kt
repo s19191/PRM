@@ -7,7 +7,6 @@ import org.simpleframework.xml.Root
 @Root(strict = false, name = "enclosure")
 data class Enclosure constructor(
     @field:Attribute(name = "url") var url: String?,
-//    @field:Element(name = "length") var length: Integer?,
     @field:Attribute(name = "type") var type: String?
 )
 {

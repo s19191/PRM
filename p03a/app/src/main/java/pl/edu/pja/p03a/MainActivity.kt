@@ -56,7 +56,6 @@ class MainActivity : AppCompatActivity() {
                     content?.channel?.item?.forEach {
                         val m = p.matcher(it.description)
                         if (m.matches()) {
-                            println(m.group(1))
                             Shared.newsList.add(
                                 News
                                     (
@@ -92,10 +91,9 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Toast.makeText(
                     this@MainActivity,
-                    "Error Occurred: ${e.message}",
+                    "Error: ${e.message}",
                     Toast.LENGTH_LONG
                 ).show()
-                println(e.printStackTrace())
             }
         }
     }

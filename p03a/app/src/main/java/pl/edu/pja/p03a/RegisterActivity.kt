@@ -25,27 +25,51 @@ class RegisterActivity : AppCompatActivity() {
         if (email.isEmpty() && password.isEmpty()) {
             Toast.makeText(this, "Wprowadź adres email oraz hasło!", Toast.LENGTH_SHORT).show()
         } else if (email.isEmpty()) {
-            Toast.makeText(this, "Wprowadź adres email!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Wprowadź adres email!",
+                Toast.LENGTH_LONG
+            ).show()
         } else if (password.isEmpty()) {
-            Toast.makeText(this, "Wprowadź hasło!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Wprowadź hasło!",
+                Toast.LENGTH_LONG
+            ).show()
         } else if (password.length < 6) {
-            Toast.makeText(this, "Hasło musi mieć minimum 6 znaków!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Hasło musi mieć minimum 6 znaków!",
+                Toast.LENGTH_LONG
+            ).show()
         } else {
             auth.createUserWithEmailAndPassword(
                 email,
                 password
             ).addOnSuccessListener {
-                Toast.makeText(this, "Zarejestrowano", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Zarejestrowano",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
             auth.signInWithEmailAndPassword(
                 email,
                 password
             ).addOnSuccessListener {
-                Toast.makeText(this, "Zalogowano ${it.user?.uid} ${it.user?.email}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Zalogowano ${it.user?.uid} ${it.user?.email}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 setResult(RESULT_OK)
                 finish()
             }.addOnFailureListener{
-                Toast.makeText(this, "Nie udało się!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Error: ${it.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }

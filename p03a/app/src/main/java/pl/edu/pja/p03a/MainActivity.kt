@@ -57,8 +57,7 @@ class MainActivity : AppCompatActivity() {
                         val m = p.matcher(it.description)
                         if (m.matches()) {
                             Shared.newsList.add(
-                                News
-                                    (
+                                News(
                                     it.title,
                                     m.group(1),
                                     it.link,
@@ -67,10 +66,9 @@ class MainActivity : AppCompatActivity() {
                             )
                         } else {
                             Shared.newsList.add(
-                                News
-                                    (
+                                News(
                                     it.title,
-                                    m.group(1),
+                                    it.description,
                                     it.link,
                                     Uri.parse(it.enclosure?.url)
                                 )

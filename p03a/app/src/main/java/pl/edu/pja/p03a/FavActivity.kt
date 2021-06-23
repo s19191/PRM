@@ -1,5 +1,6 @@
 package pl.edu.pja.p03a
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -12,9 +13,7 @@ import pl.edu.pja.p03a.adapter.FavAdapter
 import pl.edu.pja.p03a.databinding.ActivityFavBinding
 import pl.edu.pja.p03a.model.News
 import pl.edu.pja.p03a.model.NewsToDatabase
-import pl.edu.pja.p03a.shared.Shared
 import java.util.*
-
 
 class FavActivity : AppCompatActivity() {
     private val binding by lazy { ActivityFavBinding.inflate(layoutInflater) }
@@ -26,6 +25,10 @@ class FavActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
+
+        if (auth.currentUser == null) {
+            startActivity(Intent(this, LogInActivity::class.java))
+        }
 
         setupFavList()
     }
@@ -43,7 +46,6 @@ class FavActivity : AppCompatActivity() {
                     val genericTypeIndicator : GenericTypeIndicator<Map<String, NewsToDatabase>> =
                         object : GenericTypeIndicator<Map<String, NewsToDatabase>>() {}
                     val value = dataSnapshot.child("fav").getValue(genericTypeIndicator)
-                    println(value?.size)
                     var newses: MutableList<News> = mutableListOf()
                     value?.forEach {
                         newses.add(

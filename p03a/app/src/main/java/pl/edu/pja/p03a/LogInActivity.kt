@@ -48,26 +48,54 @@ class LogInActivity : AppCompatActivity() {
         val password = binding.passwordEditText.text.toString()
         if (auth.currentUser == null) {
             if (email.isEmpty() && password.isEmpty()) {
-                Toast.makeText(this, "Wprowadź adres email oraz hasło!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Wprowadź adres email oraz hasło!",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else if (email.isEmpty()) {
-                Toast.makeText(this, "Wprowadź adres email!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Wprowadź adres email!",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else if (password.isEmpty()) {
-                Toast.makeText(this, "Wprowadź hasło!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Wprowadź hasło!",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else if (password.length < 6) {
-                Toast.makeText(this, "Hasło musi mieć minimum 6 znaków!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Hasło musi mieć minimum 6 znaków!",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 auth.signInWithEmailAndPassword(
                     email,
                     password
                 ).addOnSuccessListener {
-                    Toast.makeText(this, "Zalogowano ${it.user?.uid} ${it.user?.email}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Zalogowano ${it.user?.uid} ${it.user?.email}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     finish()
                 }.addOnFailureListener {
-                    Toast.makeText(this, "Nieprawidłowe dane logowania!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Nieprawidłowe dane logowania!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         } else {
-            Toast.makeText(this, "Zalogowano ${auth.currentUser?.uid} ${auth.currentUser?.email}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Zalogowano ${auth.currentUser?.uid} ${auth.currentUser?.email}",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -86,10 +114,18 @@ class LogInActivity : AppCompatActivity() {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnSuccessListener {
-                Toast.makeText(this, "Zalogowano ${it.user?.uid} ${it.user?.email}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Zalogowano ${it.user?.uid} ${it.user?.email}",
+                    Toast.LENGTH_SHORT
+                ).show()
                 finish()
             }.addOnFailureListener {
-                Toast.makeText(this, "Nieprawidłowe dane logowania!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Nieprawidłowe dane logowania!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
 //            .addOnCompleteListener(this) { task ->
 //                if (task.isSuccessful) {
@@ -112,7 +148,11 @@ class LogInActivity : AppCompatActivity() {
                 val account = task.getResult(ApiException::class.java)!!
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
-                Toast.makeText(this, "Nieprawidłowe dane logowania!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Nieprawidłowe dane logowania!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     }

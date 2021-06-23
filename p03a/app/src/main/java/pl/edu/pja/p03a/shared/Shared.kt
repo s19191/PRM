@@ -4,4 +4,5 @@ import pl.edu.pja.p03a.model.News
 
 object Shared {
     val newsList = mutableListOf<News>()
+    val favList = mutableListOf<News>()
 }

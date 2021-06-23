@@ -4,5 +4,9 @@ data class NewsToDatabase(
     val newsTitle: String,
     val description: String,
     val link: String,
-    val photo: String
+    val photo: String,
+    val read: Boolean
 )
+{
+    constructor() : this("", "", "", "", false)
+}

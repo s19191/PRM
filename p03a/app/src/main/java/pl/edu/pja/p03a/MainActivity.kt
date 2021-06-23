@@ -102,4 +102,8 @@ class MainActivity : AppCompatActivity() {
         auth.signOut()
         startActivity(Intent(this, LogInActivity::class.java))
     }
+
+    fun goToFav(view: View) {
+        startActivity(Intent(this, FavActivity::class.java))
+    }
 }

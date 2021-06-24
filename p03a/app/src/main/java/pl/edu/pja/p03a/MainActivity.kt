@@ -1,5 +1,6 @@
 package pl.edu.pja.p03a
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -26,6 +27,8 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.regex.Pattern
 
+const val LOG_REQ = 1
+
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private lateinit var auth: FirebaseAuth
@@ -38,13 +41,11 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        if (auth.currentUser == null) {
-            startActivity(Intent(this, LogInActivity::class.java))
-        }
-
-        executeCall()
-
         setupNewsList()
+
+        if (auth.currentUser == null) {
+            startActivityForResult(Intent(this, LogInActivity::class.java), LOG_REQ)
+        }
     }
 
     private fun setupNewsList() {
@@ -52,6 +53,12 @@ class MainActivity : AppCompatActivity() {
             adapter = newsAdapter
             layoutManager = LinearLayoutManager(context)
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onResume() {
+        super.onResume()
+        executeCall()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -179,5 +186,14 @@ class MainActivity : AppCompatActivity() {
 
     fun goToFav(view: View) {
         startActivity(Intent(this, FavActivity::class.java))
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == LOG_REQ) {
+            if (resultCode == Activity.RESULT_OK) {
+                executeCall()
+            }
+        } else super.onActivityResult(requestCode, resultCode, data)
     }
 }

@@ -41,6 +41,7 @@ class LogInActivity : AppCompatActivity() {
             val signInIntent = mGoogleSignInClient.signInIntent
             startActivityForResult(signInIntent, REGISTER_VIA_GOOGLE_REQ)
         }
+        setResult(RESULT_CANCELED)
     }
 
     fun logIn(view: View) {
@@ -81,6 +82,7 @@ class LogInActivity : AppCompatActivity() {
                         "Zalogowano ${it.user?.uid} ${it.user?.email}",
                         Toast.LENGTH_SHORT
                     ).show()
+                    setResult(RESULT_OK)
                     finish()
                 }.addOnFailureListener {
                     Toast.makeText(
@@ -139,6 +141,7 @@ class LogInActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REGISTER_REQ) {
             if (resultCode == Activity.RESULT_OK) {
+                setResult(RESULT_OK)
                 finish()
             }
         } else super.onActivityResult(requestCode, resultCode, data)

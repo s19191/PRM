@@ -52,10 +52,10 @@ class FavActivity : AppCompatActivity() {
                     val genericTypeIndicator : GenericTypeIndicator<Map<String, NewsToDatabase>> =
                         object : GenericTypeIndicator<Map<String, NewsToDatabase>>() {}
                     val value = dataSnapshot.getValue(genericTypeIndicator)
-                    var newses: MutableList<News> = mutableListOf()
+                    var favNewses: MutableList<News> = mutableListOf()
                     value?.forEach {
                         if (it.value.fav) {
-                            newses.add(
+                            favNewses.add(
                                 News(
                                     it.key,
                                     it.value.newsTitle,
@@ -71,10 +71,10 @@ class FavActivity : AppCompatActivity() {
                             )
                         }
                     }
-                    newses.sortByDescending {
+                    favNewses.sortByDescending {
                         it.date
                     }
-                    favAdapter.newses = newses
+                    favAdapter.favNewses = favNewses
                 }
                 override fun onCancelled(error: DatabaseError) {
                     Toast.makeText(

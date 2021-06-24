@@ -11,7 +11,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import pl.edu.pja.p03a.databinding.ItemNewsBinding
 import pl.edu.pja.p03a.model.News
-import pl.edu.pja.p03a.model.NewsToDatabase
 import java.util.*
 
 class NewsAdapter : RecyclerView.Adapter<NewsItem>() {
@@ -39,7 +38,6 @@ class NewsAdapter : RecyclerView.Adapter<NewsItem>() {
                         .child(newses[holder.layoutPosition].key)
                         .child("read")
                         .setValue(true)
-                    newses[holder.layoutPosition].read = true
                     val builder = CustomTabsIntent.Builder()
                     builder.setToolbarColor(Color.parseColor("#6200EE"))
                     val customTabsIntent = builder.build()
@@ -47,7 +45,6 @@ class NewsAdapter : RecyclerView.Adapter<NewsItem>() {
                         parent.context,
                         Uri.parse(newses[holder.layoutPosition].link)
                     )
-                    binding.news.setBackgroundColor(Color.parseColor("#CCCCCC"))
                 }
                 binding.root.setOnLongClickListener {
                     FirebaseDatabase

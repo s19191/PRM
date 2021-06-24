@@ -13,7 +13,7 @@ import pl.edu.pja.p03a.databinding.ItemNewsBinding
 import pl.edu.pja.p03a.model.News
 
 class FavAdapter : RecyclerView.Adapter<NewsItem>(){
-    var newses: MutableList<News> = mutableListOf()
+    var favNewses: MutableList<News> = mutableListOf()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -34,25 +34,23 @@ class FavAdapter : RecyclerView.Adapter<NewsItem>(){
                         .getInstance()
                         .getReference(auth.uid!!)
                         .child("articles")
-                        .child(newses[holder.layoutPosition].key)
+                        .child(favNewses[holder.layoutPosition].key)
                         .child("read")
                         .setValue(true)
-                    newses[holder.layoutPosition].read = true
                     val builder = CustomTabsIntent.Builder()
                     builder.setToolbarColor(Color.parseColor("#6200EE"))
                     val customTabsIntent = builder.build()
                     customTabsIntent.launchUrl(
                         parent.context,
-                        Uri.parse(newses[holder.layoutPosition].link)
+                        Uri.parse(favNewses[holder.layoutPosition].link)
                     )
-                    binding.news.setBackgroundColor(Color.parseColor("#CCCCCC"))
                 }
                 binding.root.setOnLongClickListener {
                     FirebaseDatabase
                         .getInstance()
                         .getReference(auth.uid!!)
                         .child("articles")
-                        .child(newses[holder.layoutPosition].key)
+                        .child(favNewses[holder.layoutPosition].key)
                         .child("fav")
                         .setValue(false)
                         .addOnSuccessListener {
@@ -62,15 +60,14 @@ class FavAdapter : RecyclerView.Adapter<NewsItem>(){
                                 Toast.LENGTH_LONG
                             ).show()
                         }
-                    newses.removeAt(holder.layoutPosition)
                     return@setOnLongClickListener true
                 }
             }
     }
 
     override fun onBindViewHolder(holder: NewsItem, position: Int) {
-        holder.bind(newses[position])
+        holder.bind(favNewses[position])
     }
 
-    override fun getItemCount(): Int = newses.size
+    override fun getItemCount(): Int = favNewses.size
 }

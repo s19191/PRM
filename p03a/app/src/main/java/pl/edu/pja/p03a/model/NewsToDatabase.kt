@@ -5,8 +5,10 @@ data class NewsToDatabase(
     val description: String,
     val link: String,
     val photo: String,
-    val read: Boolean
+    val date: Long,
+    val read: Boolean,
+    val fav: Boolean
 )
 {
-    constructor() : this("", "", "", "", false)
+    constructor() : this("", "", "", "", 0, false, false)
 }

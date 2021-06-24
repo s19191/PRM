@@ -8,8 +8,9 @@ data class Item (
     @field:Element(name = "title", required = false) var title: String?,
     @field:Element(name = "link", required = false) var link: String?,
     @field:Element(name = "description", required = false) var description: String?,
-    @field:Element(name = "enclosure", required = false) var enclosure: Enclosure?
+    @field:Element(name = "enclosure", required = false) var enclosure: Enclosure?,
+    @field:Element(name = "date", required = false) var date: String?
 )
 {
-    constructor() : this("","","", null)
+    constructor() : this("","","", null, "")
 }

@@ -1,5 +1,6 @@
 package pl.edu.pja.p03a.adapter
 
+import android.graphics.Color
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import pl.edu.pja.p03a.databinding.ItemNewsBinding
@@ -11,6 +12,9 @@ class NewsItem(private val binding: ItemNewsBinding): RecyclerView.ViewHolder(bi
             newsTitle.text = news.newsTitle
             description.text = news.description
             Picasso.get().load(news.photo).into(photo)
+            if (news.read) {
+                binding.news.setBackgroundColor(Color.parseColor("#CCCCCC"))
+            }
         }
     }
 }

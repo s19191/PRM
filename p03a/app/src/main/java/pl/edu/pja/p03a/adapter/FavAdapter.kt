@@ -6,9 +6,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import pl.edu.pja.p03a.databinding.ItemNewsBinding
 import pl.edu.pja.p03a.model.News
-import pl.edu.pja.p03a.shared.Shared
 
 class FavAdapter : RecyclerView.Adapter<NewsItem>(){
     var newses: List<News> = emptyList()
@@ -16,6 +17,7 @@ class FavAdapter : RecyclerView.Adapter<NewsItem>(){
             field = value
             notifyDataSetChanged()
         }
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsItem {
         val binding = ItemNewsBinding.inflate(
@@ -23,17 +25,26 @@ class FavAdapter : RecyclerView.Adapter<NewsItem>(){
             parent,
             false
         )
+        auth = FirebaseAuth.getInstance()
         return NewsItem(binding)
             .also { holder ->
                 binding.root.setOnClickListener {
+                    FirebaseDatabase
+                        .getInstance()
+                        .getReference(auth.uid!!)
+                        .child("articles")
+                        .child(newses[holder.layoutPosition].key)
+                        .child("read")
+                        .setValue(true)
+                    newses[holder.layoutPosition].read = true
                     val builder = CustomTabsIntent.Builder()
                     builder.setToolbarColor(Color.parseColor("#6200EE"))
                     val customTabsIntent = builder.build()
                     customTabsIntent.launchUrl(
                         parent.context,
-                        Uri.parse(Shared.newsList[holder.layoutPosition].link)
+                        Uri.parse(newses[holder.layoutPosition].link)
                     )
-                    holder.itemView.setBackgroundColor(Color.parseColor("#CCCCCC"))
+                    binding.news.setBackgroundColor(Color.parseColor("#CCCCCC"))
                 }
             }
     }

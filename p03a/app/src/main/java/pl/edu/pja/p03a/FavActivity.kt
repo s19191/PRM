@@ -1,9 +1,11 @@
 package pl.edu.pja.p03a
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -13,6 +15,8 @@ import pl.edu.pja.p03a.adapter.FavAdapter
 import pl.edu.pja.p03a.databinding.ActivityFavBinding
 import pl.edu.pja.p03a.model.News
 import pl.edu.pja.p03a.model.NewsToDatabase
+import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 class FavActivity : AppCompatActivity() {
@@ -41,21 +45,34 @@ class FavActivity : AppCompatActivity() {
         FirebaseDatabase
             .getInstance()
             .getReference(auth.uid!!)
+            .child("articles")
             .addValueEventListener(object : ValueEventListener {
+                @RequiresApi(Build.VERSION_CODES.O)
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     val genericTypeIndicator : GenericTypeIndicator<Map<String, NewsToDatabase>> =
                         object : GenericTypeIndicator<Map<String, NewsToDatabase>>() {}
-                    val value = dataSnapshot.child("fav").getValue(genericTypeIndicator)
+                    val value = dataSnapshot.getValue(genericTypeIndicator)
                     var newses: MutableList<News> = mutableListOf()
                     value?.forEach {
-                        newses.add(
-                            News(
-                                it.value.newsTitle,
-                                it.value.description,
-                                it.value.link,
-                                it.value.photo.toUri()
+                        if (it.value.fav) {
+                            newses.add(
+                                News(
+                                    it.key,
+                                    it.value.newsTitle,
+                                    it.value.description,
+                                    it.value.link,
+                                    it.value.photo.toUri(),
+                                    LocalDateTime.ofInstant(
+                                        Instant.ofEpochMilli(it.value.date),
+                                        TimeZone.getDefault().toZoneId()
+                                    ),
+                                    it.value.read
+                                )
                             )
-                        )
+                        }
+                    }
+                    newses.sortBy {
+                        it.date
                     }
                     favAdapter.newses = newses
                 }

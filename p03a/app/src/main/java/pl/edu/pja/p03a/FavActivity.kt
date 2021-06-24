@@ -71,7 +71,7 @@ class FavActivity : AppCompatActivity() {
                             )
                         }
                     }
-                    newses.sortBy {
+                    newses.sortByDescending {
                         it.date
                     }
                     favAdapter.newses = newses

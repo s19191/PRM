@@ -14,7 +14,6 @@ class NewsItem(private val binding: ItemNewsBinding): RecyclerView.ViewHolder(bi
             Picasso.get().load(itemNews.photo).into(photo)
             if (itemNews.read) {
                 news.setBackgroundColor(Color.parseColor("#CCCCCC"))
-                    //TODO: Czemu tak?
             } else {
                 news.setBackgroundColor(Color.WHITE)
             }

@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -12,7 +13,7 @@ import pl.edu.pja.p03a.databinding.ItemNewsBinding
 import pl.edu.pja.p03a.model.News
 
 class FavAdapter : RecyclerView.Adapter<NewsItem>(){
-    var newses: List<News> = emptyList()
+    var newses: MutableList<News> = mutableListOf()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -45,6 +46,24 @@ class FavAdapter : RecyclerView.Adapter<NewsItem>(){
                         Uri.parse(newses[holder.layoutPosition].link)
                     )
                     binding.news.setBackgroundColor(Color.parseColor("#CCCCCC"))
+                }
+                binding.root.setOnLongClickListener {
+                    FirebaseDatabase
+                        .getInstance()
+                        .getReference(auth.uid!!)
+                        .child("articles")
+                        .child(newses[holder.layoutPosition].key)
+                        .child("fav")
+                        .setValue(false)
+                        .addOnSuccessListener {
+                            Toast.makeText(
+                                parent.context,
+                                "Usunięto z ulubionych!",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    newses.removeAt(holder.layoutPosition)
+                    return@setOnLongClickListener true
                 }
             }
     }
